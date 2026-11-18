@@ -137,6 +137,13 @@ footer .ig:active .gf,footer .ig:focus-visible .gf{fill:url(#igg)}
 .btn.cd span{position:relative}
 @keyframes cdfill{to{transform:scaleX(1)}}
 .hid{position:fixed;left:0;top:0;opacity:.01;pointer-events:none;z-index:-1;display:block}
+.gbtn{display:flex;align-items:center;justify-content:center;gap:10px;width:100%;font-weight:600}
+.acc{display:flex;align-items:center;justify-content:space-between;gap:12px}.acc .who{min-width:0;overflow-wrap:anywhere}
+.acc .btn{flex:none}
+.sy{display:flex;align-items:center;gap:8px;margin-top:10px;font-size:13px;color:var(--mute)}
+.sy i{width:8px;height:8px;border-radius:50%;background:var(--na);flex:none;animation:pulse 1.2s ease-in-out infinite}
+.sy.ok i{background:var(--ok);animation:none}
+@keyframes pulse{50%{opacity:.35;transform:scale(.8)}}
 .leg{font-size:13px;color:var(--mute);margin-top:10px;line-height:1.7}
 @media (min-width:720px){
  body{padding-bottom:40px}
@@ -168,6 +175,7 @@ footer .ig:active .gf,footer .ig:focus-visible .gf{fill:url(#igg)}
 <a class="soc ig" href="https://www.instagram.com/kunshsumitagarwal/" target="_blank" rel="noopener noreferrer" aria-label="Instagram"><svg viewBox="0 0 24 24" aria-hidden="true"><rect class="gs" x="3" y="3" width="18" height="18" rx="5.2" fill="none" stroke="currentColor" stroke-width="1.9"/><circle class="gs" cx="12" cy="12" r="4.1" fill="none" stroke="currentColor" stroke-width="1.9"/><circle class="gf" cx="17.3" cy="6.7" r="1.15" fill="currentColor"/></svg></a>
 <svg width="0" height="0" style="position:absolute" aria-hidden="true"><defs><linearGradient id="igg" gradientUnits="userSpaceOnUse" x1="3" y1="21" x2="21" y2="3"><stop offset="0" stop-color="#f09433"/><stop offset=".5" stop-color="#dc2743"/><stop offset="1" stop-color="#bc1888"/></linearGradient></defs></svg>
 </footer>
+<div class="ov" id="syn" role="dialog" aria-modal="true" aria-labelledby="st" hidden><div class="mod" id="sbody"></div></div>
 <div class="ov" id="wel" role="dialog" aria-modal="true" aria-labelledby="wt" hidden><div class="mod" id="wbody"></div></div>
 <label class="hid" id="hl" aria-hidden="true"><input type="checkbox" switch id="hs" tabindex="-1"></label>
 <label class="hid" id="hl2" aria-hidden="true"><input type="checkbox" switch tabindex="-1"></label>
@@ -176,7 +184,7 @@ const KEY="attendance_tracker_v1",SYM={P:"✔",A:"✘",C:"−"},LBL={P:"Attended
 const $=s=>document.querySelector(s);
 const esc=s=>String(s).replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
 const RM=matchMedia("(prefers-reduced-motion:reduce)").matches;
-const D=()=>({v:2,name:"",min:78,hap:true,subjects:[],open:{},log:{}});
+const D=()=>({v:2,ts:0,name:"",min:78,hap:true,subjects:[],open:{},log:{}});
 function migrate(o){
  if(!o||typeof o!=="object")return D();
  if(o.v===2)return Object.assign(D(),o);
@@ -187,7 +195,7 @@ function migrate(o){
  return n}
 let S=D();
 try{const r=localStorage.getItem(KEY);if(r)S=migrate(JSON.parse(r))}catch(e){}
-const save=()=>{try{localStorage.setItem(KEY,JSON.stringify(S))}catch(e){}};
+const save=()=>{S.ts=Date.now();try{localStorage.setItem(KEY,JSON.stringify(S))}catch(e){}if(typeof schedPush==="function")schedPush()};
 const iso=d=>d.getFullYear()+"-"+String(d.getMonth()+1).padStart(2,"0")+"-"+String(d.getDate()).padStart(2,"0");
 const parse=s=>{const[y,m,d]=s.split("-").map(Number);return new Date(y,m-1,d)};
 const fmt=(s,o)=>parse(s).toLocaleDateString(undefined,o);
@@ -200,6 +208,88 @@ function buzz(k){
   const l=$("#hl");if(!l)return;
   l.click();if(k==="A"){const l2=$("#hl2");if(l2)l2.click()}
  }catch(e){}}
+
+
+/* ===== Google sign-in + cross-device sync (Firebase). Paste your config into FB to enable; leave apiKey empty to stay local-only. ===== */
+const FB={apiKey:"",authDomain:"",projectId:"",appId:""};
+const UKEY="bunkit_synced_uid";
+let auth=null,db=null,user=null,unsub=null,pushT=null,hold=false,syncState="off",authMsg="",firstSnap=true;
+const loadJS=u=>new Promise((ok,no)=>{const e=document.createElement("script");e.src=u;e.onload=ok;e.onerror=no;document.head.appendChild(e)});
+const hasData=()=>S.subjects.length>0||Object.keys(S.log).length>0;
+function schedPush(){if(!user||hold)return;clearTimeout(pushT);pushT=setTimeout(pushNow,700)}
+function pushNow(){
+ clearTimeout(pushT);if(!user||!db||hold)return;
+ syncState="sync";renderAcct();
+ db.collection("users").doc(user.uid).set({data:JSON.stringify(S),ts:S.ts||Date.now(),updated:firebase.firestore.FieldValue.serverTimestamp()})
+  .then(()=>{syncState="ok";try{localStorage.setItem(UKEY,user.uid)}catch(e){}renderAcct()})
+  .catch(()=>{syncState="err";renderAcct()})}
+function parseRemote(d){try{const o=migrate(JSON.parse(d.data));o.ts=+d.ts||o.ts||0;return o}catch(e){return null}}
+function applyRemote(o){
+ S=o;try{localStorage.setItem(KEY,JSON.stringify(S));localStorage.setItem(UKEY,user.uid)}catch(e){}
+ shown=null;shownW=0;syncState="ok";renderAll();renderAcct()}
+function reconcile(d){
+ if(!d){pushNow();return}
+ const r=parseRemote(d);if(!r)return;
+ if(r.ts>(S.ts||0))applyRemote(r);
+ else if(r.ts<(S.ts||0))pushNow();
+ else{syncState="ok";try{localStorage.setItem(UKEY,user.uid)}catch(e){}renderAcct()}}
+function askChoice(d){
+ hold=true;const o=$("#syn"),b=$("#sbody");o.classList.remove("out");o.hidden=false;
+ b.innerHTML=`<h2 id="st">Which data do you want?</h2><p>This device already has attendance data, and your Google account has saved data too.</p>
+ <button class="btn pri" id="suse">Use my saved (cloud) data</button>
+ <button class="btn" id="skeep" style="margin-top:8px">Keep this device’s data</button>
+ <div class="note">“Keep” replaces the cloud copy with what’s on this device.</div>`;
+ const done=()=>{o.classList.add("out");setTimeout(()=>{o.hidden=true},280);hold=false};
+ $("#suse").onclick=()=>{buzz("P");done();const r=parseRemote(d);if(r)applyRemote(r)};
+ $("#skeep").onclick=()=>{buzz("P");done();const r=parseRemote(d);S.ts=Math.max(Date.now(),(r?r.ts:0)+1);save();pushNow()};
+ setTimeout(()=>$("#suse").focus(),60)}
+function firstSync(d){
+ if(!d){pushNow();return}
+ const same=localStorage.getItem(UKEY)===user.uid;
+ if(!hasData()||same)return reconcile(d);
+ const r=parseRemote(d);if(r&&r.ts===S.ts)return reconcile(d);
+ askChoice(d)}
+function onUser(u){
+ user=u;if(unsub){unsub();unsub=null}
+ authMsg="";firstSnap=true;
+ if(!u){syncState="off";renderAcct();return}
+ syncState="sync";renderAcct();
+ if(window._closeWel&&!$("#wel").hidden)window._closeWel();
+ unsub=db.collection("users").doc(u.uid).onSnapshot(snap=>{
+  if(snap.metadata.hasPendingWrites)return;
+  if(snap.metadata.fromCache){syncState="off2";renderAcct();return}
+  const d=snap.exists?snap.data():null;
+  if(firstSnap){firstSnap=false;return firstSync(d)}
+  if(hold)return;reconcile(d)},
+  ()=>{syncState="err";renderAcct()})}
+async function signIn(){
+ if(!auth){authMsg="Still connecting. Try again in a moment.";renderAcct();return}
+ authMsg="";const p=new firebase.auth.GoogleAuthProvider();p.setCustomParameters({prompt:"select_account"});
+ try{await auth.signInWithPopup(p)}catch(e){
+  if(e.code==="auth/popup-blocked"||e.code==="auth/operation-not-supported-in-this-environment"){try{await auth.signInWithRedirect(p)}catch(_){}}
+  else if(e.code!=="auth/popup-closed-by-user"&&e.code!=="auth/cancelled-popup-request"){authMsg="Sign-in failed ("+(e.code||"error")+")";renderAcct()}}}
+function signOut(){if(auth)auth.signOut()}
+const GIC='<svg viewBox="0 0 48 48" width="20" height="20" aria-hidden="true"><path fill="#EA4335" d="M24 9.5c3.5 0 6.6 1.2 9.1 3.6l6.8-6.8C35.8 2.4 30.3 0 24 0 14.6 0 6.5 5.4 2.6 13.2l7.9 6.1C12.4 13.6 17.7 9.5 24 9.5z"/><path fill="#4285F4" d="M46.5 24.5c0-1.6-.1-3.1-.4-4.5H24v9h12.7c-.6 3-2.3 5.5-4.8 7.2l7.6 5.9c4.4-4.1 7-10.1 7-17.6z"/><path fill="#FBBC05" d="M10.5 28.7c-.5-1.5-.8-3-.8-4.7s.3-3.2.8-4.7l-7.9-6.1C.9 16.4 0 20.1 0 24s.9 7.6 2.6 10.8l7.9-6.1z"/><path fill="#34A853" d="M24 48c6.5 0 11.9-2.1 15.9-5.8l-7.6-5.9c-2.1 1.4-4.9 2.3-8.3 2.3-6.3 0-11.6-4.1-13.5-9.8l-7.9 6.1C6.5 42.6 14.6 48 24 48z"/></svg>';
+function renderAcct(){
+ const el=$("#acct");if(!el||!FB.apiKey)return;
+ let h;
+ if(user){
+  const st=!navigator.onLine||syncState==="off2"?"Offline · changes will sync when you’re back online":syncState==="sync"?"Syncing…":syncState==="err"?"Couldn’t sync · will retry on your next change":"Synced on all your devices";
+  h=`<div class="acc"><div class="who"><b>${esc(user.displayName||"Signed in")}</b><div class="note" style="margin:0">${esc(user.email||"")}</div></div><button class="btn" id="gout">Sign out</button></div>
+  <div class="sy ${syncState==="ok"?"ok":""}"><i></i>${st}</div>`}
+ else h=`<b>Sync across devices</b><div class="note" style="margin:4px 0 12px">Sign in with Google to see the same attendance on every device.</div>
+  <button class="btn gbtn" id="gin">${GIC}<span>Continue with Google</span></button>${authMsg?`<div class="note" style="color:var(--no)">${esc(authMsg)}</div>`:""}`;
+ el.innerHTML=h}
+async function initCloud(){
+ if(!FB.apiKey||auth)return;
+ try{
+  const b="https://www.gstatic.com/firebasejs/10.12.2/firebase-";
+  await loadJS(b+"app-compat.js");await Promise.all([loadJS(b+"auth-compat.js"),loadJS(b+"firestore-compat.js")]);
+  firebase.initializeApp(FB);auth=firebase.auth();db=firebase.firestore();
+  auth.getRedirectResult().catch(()=>{});auth.onAuthStateChanged(onUser)
+ }catch(e){auth=null;db=null;authMsg="Sync needs an internet connection.";renderAcct()}}
+addEventListener("online",()=>{if(!auth)initCloud();else renderAcct()});
+addEventListener("offline",renderAcct);
 
 function stats(id){const o=S.open[id]||{};let h=+o.h||0,a=+o.a||0;
  for(const d in S.log){const v=S.log[d][id];if(v==="P"){h++;a++}else if(v==="A")h++}return{h,a}}
@@ -273,7 +363,7 @@ function renderReg(){
  $("#reg").innerHTML=h}
 
 function renderSubj(){
- let h=`<div class="card fin"><label>Your name<input type="text" id="uname" maxlength="30" autocomplete="given-name" value="${esc(S.name||"")}"></label></div><div class="card">`;
+ let h=(FB.apiKey?'<div class="card" id="acct"></div>':"")+`<div class="card fin"><label>Your name<input type="text" id="uname" maxlength="30" autocomplete="given-name" value="${esc(S.name||"")}"></label></div><div class="card">`;
  S.subjects.forEach(s=>{const o=S.open[s.id]||{h:0,a:0};
   h+=`<div class="srow" data-row="${s.id}"><div class="top"><span class="grip" title="Hold and drag" aria-label="Hold and drag to reorder">⠿</span><input class="nmi" data-n="${s.id}" value="${esc(s.name)}" maxlength="40" aria-label="Subject name" autocomplete="off"></div>
   <label>Held<input type="number" inputmode="numeric" min="0" data-o="h" data-id="${s.id}" value="${o.h||0}"></label>
@@ -281,7 +371,7 @@ function renderSubj(){
   <div class="mv"><button class="del" data-del="${s.id}">Remove</button></div></div>`});
  h+=`<textarea id="bulk" rows="3" aria-label="New subjects" style="margin-top:12px" placeholder="New subjects, one per line"></textarea>
  <div class="tools"><button class="btn pri" id="addb">Add</button></div></div>`;
- $("#subj").innerHTML=h}
+ $("#subj").innerHTML=h;renderAcct()}
 
 const renderMost=()=>{renderToday();renderFore();renderReg()};
 const renderAll=()=>{renderMost();renderSubj()};
@@ -293,6 +383,8 @@ function show(t){
 
 document.addEventListener("click",e=>{
  const t=e.target.closest("button,td.cell");if(!t)return;
+ if(t.id==="gin"||t.id==="wg"){buzz("C");return signIn()}
+ if(t.id==="gout"){buzz("C");return signOut()}
  if(t.dataset.t){buzz("C");return show(t.dataset.t)}
  if(t.classList.contains("b")&&t.dataset.v){buzz(t.dataset.v);return setMark(cur,t.dataset.id,t.dataset.v)}
  if(t.id==="td"){cur=today;enter=true;return renderToday()}
@@ -349,6 +441,7 @@ document.addEventListener("visibilitychange",()=>{
  if(seen)return;const w=$("#wel"),b=$("#wbody");w.hidden=false;
  const close=()=>{try{localStorage.setItem("attendance_welcome_v1","1")}catch(e){}
   w.classList.add("out");setTimeout(()=>{w.hidden=true},260);document.removeEventListener("keydown",onKey)};
+ window._closeWel=close;
  let locked=false,tick=null;
  const onKey=e=>{if(e.key==="Escape"&&!locked)close()};
  const step2=()=>{const n=S.name?esc(S.name):"";
@@ -365,12 +458,12 @@ document.addEventListener("visibilitychange",()=>{
  const step1=()=>{b.innerHTML=`<h2 id="wt">Welcome</h2><p>What should we call you?</p>
   <input type="text" id="wn" maxlength="30" autocomplete="given-name" placeholder="Your name" aria-label="Your name">
   <button class="btn pri" id="wgo" style="margin-top:14px">Continue</button>
-  <button class="btn" id="wsk" style="margin-top:6px;border:0;background:none;color:var(--mute)">Skip</button>`;
+  <button class="btn" id="wsk" style="margin-top:6px;border:0;background:none;color:var(--mute)">Skip</button>${FB.apiKey?`<div class="note" style="text-align:center;margin:14px 0 8px">Already use Bunkit on another device?</div><button class="btn gbtn" id="wg">${GIC}<span>Sign in with Google</span></button>`:""}`;
   const go=()=>{S.name=$("#wn").value.trim().slice(0,30);save();renderSubj();step2()};
   $("#wgo").onclick=go;$("#wsk").onclick=step2;
   $("#wn").addEventListener("keydown",e=>{if(e.key==="Enter"){e.preventDefault();go()}});$("#wn").focus()};
  document.addEventListener("keydown",onKey);step1()})();
-renderAll();
+renderAll();initCloud();
 if("serviceWorker" in navigator)addEventListener("load",()=>{try{navigator.serviceWorker.register("sw.js").catch(()=>{})}catch(e){}});
 </script>
 </body>

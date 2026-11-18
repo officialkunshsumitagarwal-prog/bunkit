@@ -1,0 +1,44 @@
+BUNKIT: GOOGLE SIGN-IN + SYNC SETUP (free, about 10 minutes)
+
+1. Go to console.firebase.google.com and sign in with your Google account.
+   Click "Create a project", name it (e.g. bunkit), turn OFF Google Analytics, Create.
+
+2. Build > Authentication > Get started > Sign-in method > Google > Enable.
+   Choose a support email, then Save.
+
+3. Authentication > Settings > Authorized domains > Add domain.
+   Add ONLY the domain, without https:// and without the repo name.
+   Example:  yourname.github.io
+
+4. Build > Firestore Database > Create database.
+   Choose production mode and any nearby region (e.g. asia-south1 for India).
+   Then open the "Rules" tab, replace everything with the text below, and click Publish:
+
+   rules_version = '2';
+   service cloud.firestore {
+     match /databases/{database}/documents {
+       match /users/{uid} {
+         allow read, write: if request.auth != null && request.auth.uid == uid;
+       }
+     }
+   }
+
+   (This lets each person read and write only their own data.)
+
+5. Click the gear icon (Project settings) > General > scroll to "Your apps" > click the Web icon </>.
+   Register the app (any nickname, skip Firebase Hosting). Copy the firebaseConfig values.
+
+6. Open index.html in GitHub (pencil icon) and find this line near the top of the script:
+
+   const FB={apiKey:"",authDomain:"",projectId:"",appId:""};
+
+   Paste your values between the quotes, for example:
+
+   const FB={apiKey:"AIza...",authDomain:"bunkit-1234.firebaseapp.com",projectId:"bunkit-1234",appId:"1:123:web:abc"};
+
+   (These values are not secret. The Firestore rules in step 4 protect the data.)
+
+7. Commit the change. Wait a minute, refresh the site, and open Subjects:
+   you should see "Continue with Google".
+
+If sign-in says "unauthorized-domain", step 3 is missing or has the wrong domain.
