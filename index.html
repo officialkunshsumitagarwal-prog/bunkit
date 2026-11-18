@@ -136,7 +136,7 @@ footer .ig:active .gf,footer .ig:focus-visible .gf{fill:url(#igg)}
 .btn.cd::before{content:"";position:absolute;inset:0;background:rgba(255,255,255,.28);transform-origin:left;transform:scaleX(0);animation:cdfill 10s linear forwards}
 .btn.cd span{position:relative}
 @keyframes cdfill{to{transform:scaleX(1)}}
-.hid{position:fixed;left:0;top:0;opacity:.01;pointer-events:none;z-index:-1;display:block}
+.hid{position:fixed;left:0;top:0;opacity:.004;pointer-events:none;z-index:-1;display:block}
 .gbtn{display:flex;align-items:center;justify-content:center;gap:10px;width:100%;font-weight:600}
 .acc{display:flex;align-items:center;justify-content:space-between;gap:12px}.acc .who{min-width:0;overflow-wrap:anywhere}
 .acc .btn{flex:none}
@@ -144,6 +144,35 @@ footer .ig:active .gf,footer .ig:focus-visible .gf{fill:url(#igg)}
 .sy i{width:8px;height:8px;border-radius:50%;background:var(--na);flex:none;animation:pulse 1.2s ease-in-out infinite}
 .sy.ok i{background:var(--ok);animation:none}
 @keyframes pulse{50%{opacity:.35;transform:scale(.8)}}
+.lgrow{display:flex;align-items:center;justify-content:space-between;gap:8px 12px;flex-wrap:wrap;margin-bottom:8px}
+.lgrow .legend{margin:0}
+.xbtn{min-height:40px;padding:6px 14px;border-radius:999px;border:1.5px dashed var(--acc);background:transparent;color:var(--acc);font:inherit;font-size:13px;font-weight:600;cursor:pointer;transition:transform .12s,background-color .2s}
+.xbtn:active{transform:scale(.95);background:var(--accbg)}
+.tag{font-size:11px;font-weight:600;color:var(--acc);background:var(--accbg);border-radius:999px;padding:2px 8px;margin-left:8px;white-space:nowrap;vertical-align:middle}
+.xs{flex:1 1 100%;display:flex;align-items:center;gap:8px 12px;flex-wrap:wrap;border-top:1px dashed var(--line);padding-top:10px}
+.xs.new{animation:rise .4s cubic-bezier(.2,.8,.2,1) both}
+.xs .xl{flex:1;min-width:76px;font-size:13px;color:var(--mute);font-weight:600}
+.xr{width:40px;height:40px;border-radius:50%;border:1.5px solid var(--line);background:transparent;color:var(--mute);font-size:20px;line-height:1;cursor:pointer;flex:none;transition:transform .12s}
+.xr:active{transform:scale(.88)}
+.xlist{display:grid;gap:8px;max-height:46vh;overflow-y:auto;-webkit-overflow-scrolling:touch}
+.xlist .btn{text-align:left;font-weight:600}
+.cell.M{font-size:15px;letter-spacing:2px;white-space:nowrap}
+.cell .P{color:var(--ok)}.cell .A{color:var(--no)}.cell .C{color:var(--na)}
+.pl{margin-top:10px;padding:14px;border-radius:16px;background:var(--card);border:1px solid var(--line)}
+.plh{display:flex;justify-content:space-between;align-items:flex-start;gap:6px 14px;flex-wrap:wrap}
+.plnm{font-weight:600;overflow-wrap:anywhere;flex:1 1 120px}
+.plr{text-align:right;color:var(--mute);font-variant-numeric:tabular-nums;font-size:14px}
+.plafter{font-size:20px;color:var(--ink)}.plafter.ok{color:var(--ok)}.plafter.no{color:var(--no)}
+.plall .big{font-size:clamp(40px,13vw,56px);margin-top:4px}
+.plall .plr{display:flex;flex-direction:column;align-items:flex-end;gap:6px}
+.plc{display:flex;gap:10px;flex-wrap:wrap;margin-top:14px}
+.stp{display:flex;align-items:center;justify-content:space-between;gap:10px;flex:1 1 150px;padding:5px 5px 5px 12px;border:1px solid var(--line);border-radius:14px;background:var(--bg)}
+.stl{font-size:13px;color:var(--mute);font-weight:600}
+.sbs{display:flex;align-items:center;gap:4px}
+.sb{width:40px;height:40px;border-radius:12px;border:1.5px solid var(--line);background:var(--card);color:var(--ink);font-size:20px;line-height:1;cursor:pointer;transition:transform .12s,opacity .2s}
+.sb:active{transform:scale(.88)}.sb:disabled{opacity:.35;cursor:default;transform:none}
+.stp output{min-width:30px;text-align:center;font-weight:700;font-size:17px;font-variant-numeric:tabular-nums}
+.plf{display:flex;align-items:center;gap:8px;margin-top:12px;flex-wrap:wrap}.plf .note{margin:0}.pill[hidden]{display:none}
 .leg{font-size:13px;color:var(--mute);margin-top:10px;line-height:1.7}
 @media (min-width:720px){
  body{padding-bottom:40px}
@@ -175,6 +204,7 @@ footer .ig:active .gf,footer .ig:focus-visible .gf{fill:url(#igg)}
 <a class="soc ig" href="https://www.instagram.com/kunshsumitagarwal/" target="_blank" rel="noopener noreferrer" aria-label="Instagram"><svg viewBox="0 0 24 24" aria-hidden="true"><rect class="gs" x="3" y="3" width="18" height="18" rx="5.2" fill="none" stroke="currentColor" stroke-width="1.9"/><circle class="gs" cx="12" cy="12" r="4.1" fill="none" stroke="currentColor" stroke-width="1.9"/><circle class="gf" cx="17.3" cy="6.7" r="1.15" fill="currentColor"/></svg></a>
 <svg width="0" height="0" style="position:absolute" aria-hidden="true"><defs><linearGradient id="igg" gradientUnits="userSpaceOnUse" x1="3" y1="21" x2="21" y2="3"><stop offset="0" stop-color="#f09433"/><stop offset=".5" stop-color="#dc2743"/><stop offset="1" stop-color="#bc1888"/></linearGradient></defs></svg>
 </footer>
+<div class="ov" id="xo" role="dialog" aria-modal="true" aria-labelledby="xt" hidden><div class="mod" id="xbody"></div></div>
 <div class="ov" id="syn" role="dialog" aria-modal="true" aria-labelledby="st" hidden><div class="mod" id="sbody"></div></div>
 <div class="ov" id="wel" role="dialog" aria-modal="true" aria-labelledby="wt" hidden><div class="mod" id="wbody"></div></div>
 <label class="hid" id="hl" aria-hidden="true"><input type="checkbox" switch id="hs" tabindex="-1"></label>
@@ -184,10 +214,10 @@ const KEY="attendance_tracker_v1",SYM={P:"✔",A:"✘",C:"−"},LBL={P:"Attended
 const $=s=>document.querySelector(s);
 const esc=s=>String(s).replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
 const RM=matchMedia("(prefers-reduced-motion:reduce)").matches;
-const D=()=>({v:2,ts:0,name:"",min:78,hap:true,subjects:[],open:{},log:{}});
+const D=()=>({v:2,ts:0,name:"",min:78,hap:true,subjects:[],open:{},log:{},plan:{}});
 function migrate(o){
  if(!o||typeof o!=="object")return D();
- if(o.v===2)return Object.assign(D(),o);
+ if(o.v===2){const n=Object.assign(D(),o);if(!n.plan||typeof n.plan!=="object")n.plan={};return n}
  const n=D();n.min=o.min||78;
  ["Intro to R Programming","R Programming Lab","PBA","RM","HRM","SEC3","SEC4"].forEach((nm,i)=>{
   n.subjects.push({id:"s"+i,name:nm});const p=(o.open||[])[i]||{};n.open["s"+i]={h:+p.h||0,a:+p.a||0}});
@@ -199,7 +229,7 @@ const save=()=>{S.ts=Date.now();try{localStorage.setItem(KEY,JSON.stringify(S))}
 const iso=d=>d.getFullYear()+"-"+String(d.getMonth()+1).padStart(2,"0")+"-"+String(d.getDate()).padStart(2,"0");
 const parse=s=>{const[y,m,d]=s.split("-").map(Number);return new Date(y,m-1,d)};
 const fmt=(s,o)=>parse(s).toLocaleDateString(undefined,o);
-let today=iso(new Date()),cur=today,fN=1,fM=0,enter=true,lastPop=null,shown=null,shownW=0;
+let today=iso(new Date()),cur=today,enter=true,lastPop=null,newSlot=null,shown=null,shownW=0;
 
 function buzz(k){
  if(S.hap===false)return;
@@ -291,8 +321,14 @@ async function initCloud(){
 addEventListener("online",()=>{if(!auth)initCloud();else renderAcct()});
 addEventListener("offline",renderAcct);
 
+/* A day's entry for a subject is either one mark ("P"/"A"/"C") or an array of marks (several lectures that day; "" = not marked yet). */
+function marks(v){if(Array.isArray(v))return v.map(x=>(x==="P"||x==="A"||x==="C")?x:"");return(v==="P"||v==="A"||v==="C")?[v]:[]}
+const getArr=(d,id)=>marks((S.log[d]||{})[id]);
+function putArr(d,id,arr){const day=S.log[d]||(S.log[d]={});
+ if(arr.length<=1){if(arr[0])day[id]=arr[0];else delete day[id]}else day[id]=arr;
+ if(!Object.keys(day).length)delete S.log[d]}
 function stats(id){const o=S.open[id]||{};let h=+o.h||0,a=+o.a||0;
- for(const d in S.log){const v=S.log[d][id];if(v==="P"){h++;a++}else if(v==="A")h++}return{h,a}}
+ for(const d in S.log)marks(S.log[d][id]).forEach(v=>{if(v==="P"){h++;a++}else if(v==="A")h++});return{h,a}}
 function totals(){let h=0,a=0;S.subjects.forEach(s=>{const x=stats(s.id);h+=x.h;a+=x.a});return{h,a}}
 function calc(h,a){const m=S.min/100;if(!h)return{p:null,skip:0,need:0,ok:true};
  const ok=a/h>=m-1e-9;let skip=0,need=0;
@@ -306,20 +342,32 @@ function advice(c){
  if(c.skip===0)return"Don’t bunk the next lecture";
  return`You can bunk <b>${pl(c.skip,"lecture")}</b>`}
 
-function setMark(d,id,v){
- const day=S.log[d]||(S.log[d]={});
- if(day[id]===v)delete day[id];else{day[id]=v;lastPop={id,v}}
- if(!Object.keys(day).length)delete S.log[d];
- save();renderMost()}
+function setMark(d,id,v,k=0){
+ const arr=getArr(d,id);while(arr.length<=k)arr.push("");
+ if(arr[k]===v)arr[k]="";else{arr[k]=v;lastPop={id,v,k}}
+ putArr(d,id,arr);save();renderMost()}
+function openXP(){
+ if(!S.subjects.length)return;
+ if(S.subjects.length===1)return addSlot(S.subjects[0].id);
+ const o=$("#xo");o.classList.remove("out");o.hidden=false;
+ $("#xbody").innerHTML=`<h2 id="xt">Extra lecture</h2><p>Which subject had another lecture on ${esc(fmt(cur,{weekday:"long",day:"numeric",month:"short"}))}?</p>
+ <div class="xlist">${S.subjects.map(x=>`<button class="btn" data-xs="${x.id}">${esc(x.name)}</button>`).join("")}</div>
+ <button class="btn" id="xcancel" style="margin-top:10px;border:0;background:none;color:var(--mute)">Cancel</button>`;
+ setTimeout(()=>{const b=$("#xbody button");if(b)b.focus()},60)}
+function closeXP(){const o=$("#xo");if(o.hidden)return;o.classList.add("out");setTimeout(()=>{o.hidden=true},280)}
+function addSlot(id){const arr=getArr(cur,id);if(!arr.length)arr.push("");if(arr.length>=8){closeXP();return}
+ arr.push("");putArr(cur,id,arr);newSlot={id,k:arr.length-1};save();closeXP();renderMost()}
 
 function renderToday(){
- const t=totals(),c=calc(t.h,t.a),day=S.log[cur]||{},en=enter;enter=false;
+ const t=totals(),c=calc(t.h,t.a),day=S.log[cur]||{},en=enter,nsl=newSlot;enter=false;newSlot=null;
  let list="";
  if(!S.subjects.length)list=`<div class="card empty"><button class="btn pri" data-t="subj">Add your subjects</button></div>`;
- S.subjects.forEach((sb,i)=>{const s=stats(sb.id),k=calc(s.h,s.a),v=day[sb.id];
+ S.subjects.forEach((sb,i)=>{const s=stats(sb.id),k=calc(s.h,s.a),arr=marks(day[sb.id]),n=Math.max(1,arr.length);
   const ex=k.p==null?"":k.ok?(k.skip>0?`<span class="ok">can bunk ${k.skip}</span>`:""):`<span class="no">attend ${k.need} more</span>`;
-  list+=`<div class="row" style="--i:${i+1}"><div class="info"><div class="nm">${esc(sb.name)}</div><div class="st">${s.a}/${s.h} · ${pc(k.p)}${ex?" · "+ex:""}</div></div>
-  <div class="btns">${["P","A","C"].map(x=>`<button class="b ${v===x?"sel "+x:""}${lastPop&&lastPop.id===sb.id&&lastPop.v===x?" pop":""}" data-id="${sb.id}" data-v="${x}" aria-pressed="${v===x}" aria-label="${esc(sb.name)}: ${LBL[x]}">${SYM[x]}</button>`).join("")}</div></div>`});
+  const bt=(q,cv)=>["P","A","C"].map(x=>`<button class="b ${cv===x?"sel "+x:""}${lastPop&&lastPop.id===sb.id&&lastPop.v===x&&lastPop.k===q?" pop":""}" data-id="${sb.id}" data-v="${x}" data-k="${q}" aria-pressed="${cv===x}" aria-label="${esc(sb.name)}${q?", lecture "+(q+1):""}: ${LBL[x]}">${SYM[x]}</button>`).join("");
+  let xs="";for(let q=1;q<n;q++)xs+=`<div class="xs${nsl&&nsl.id===sb.id&&nsl.k===q?" new":""}"><span class="xl">Lecture ${q+1}</span><div class="btns">${bt(q,arr[q])}</div><button class="xr" data-xr="${sb.id}:${q}" aria-label="Remove lecture ${q+1} of ${esc(sb.name)}">×</button></div>`;
+  list+=`<div class="row" style="--i:${i+1}"><div class="info"><div class="nm">${esc(sb.name)}${n>1?`<span class="tag">${n} today</span>`:""}</div><div class="st">${s.a}/${s.h} · ${pc(k.p)}${ex?" · "+ex:""}</div></div>
+  <div class="btns">${bt(0,arr[0])}</div>${xs}</div>`});
  lastPop=null;
  $("#tmain").innerHTML=`<div class="tgrid ${en?"enter":""}"><aside><div class="hero"><div class="tgt">Required<br><input type="number" inputmode="numeric" id="min" min="1" max="99" value="${S.min}" aria-label="Required attendance percent"> %</div>
  <div class="sub">Overall attendance</div><div class="big ${c.p==null?"":c.ok?"ok":"no"}" id="bigp">${pc(c.p)}</div>
@@ -328,7 +376,7 @@ function renderToday(){
  <div class="adv">${advice(c)}</div></div></aside>
  <div><div class="datebar"><b>${cur===today?"Today, ":""}${fmt(cur,{weekday:"long",day:"numeric",month:"long",year:"numeric"})}</b>
  <span><input type="date" id="dt" value="${cur}" max="${today}" aria-label="Date to mark">${cur!==today?` <button class="btn" id="td">Back to today</button>`:""}</span></div>
- <div class="legend">✔ Attended &nbsp; ✘ Absent &nbsp; − Cancelled (not counted)</div>${list}</div></div>`;
+ <div class="lgrow"><div class="legend">✔ Attended &nbsp; ✘ Absent &nbsp; − Cancelled (not counted)</div>${S.subjects.length?`<button class="xbtn" id="xadd">＋ Extra lecture</button>`:""}</div>${list}</div></div>`;
  if(c.p==null){shown=null;shownW=0;return}
  const to=c.p*100,from=shown==null?0:shown,el=$("#bigp"),f=$("#fill");
  f.style.width=shownW+"%";
@@ -337,27 +385,52 @@ function renderToday(){
   el.textContent=(from+(to-from)*e).toFixed(1)+"%";if(k<1)requestAnimationFrame(step)})(t0)}
  shown=to;shownW=Math.min(100,to)}
 
+const PLMAX=60;
+const gp=id=>{const p=S.plan&&S.plan[id];return{s:+(p&&p.s)||0,a:+(p&&p.a)||0}};
 function renderFore(){
- $("#fore").innerHTML=`<div class="card"><div class="fin">
- <label>Lectures to bunk<input type="number" inputmode="numeric" id="fn" min="0" value="${fN}"></label>
- <label>Lectures to attend<input type="number" inputmode="numeric" id="fm" min="0" value="${fM}"></label></div>
-</div>
- <div class="card scroll" id="fres"></div>`;foreRes()}
-function foreRes(){
- if(!S.subjects.length){$("#fres").innerHTML=`<div class="empty">Add subjects first.</div>`;return}
- const rows=[["Overall",totals()],...S.subjects.map(s=>[s.name,stats(s.id)])];
- let h=`<table><tr><th>Subject</th><th>Now</th><th>After</th><th>Status</th></tr>`;
- rows.forEach(([n,s],j)=>{const now=s.h?s.a/s.h:null,nh=s.h+fN+fM,p=nh?(s.a+fM)/nh:null,ok=p!=null&&p>=S.min/100-1e-9;
-  h+=`<tr${j===0?' style="font-weight:700"':""}><td>${esc(n)}</td><td>${pc(now)}</td><td>${pc(p)}</td><td>${p==null?"–":`<span class="pill ${ok?"ok":"no"}">${ok?"Safe":"Below "+S.min+"%"}</span>`}</td></tr>`});
- $("#fres").innerHTML=h+"</table>"}
+ if(!S.subjects.length){$("#fore").innerHTML=`<div class="card empty">Add subjects first.</div>`;return}
+ const stp=(id,k,lbl,nm)=>`<div class="stp"><span class="stl">${lbl}</span><span class="sbs"><button class="sb" data-pl="${id}:${k}:-1" aria-label="One fewer lecture to ${lbl.toLowerCase()} in ${esc(nm)}">−</button><output data-n="${id}:${k}" aria-live="polite">0</output><button class="sb" data-pl="${id}:${k}:1" aria-label="One more lecture to ${lbl.toLowerCase()} in ${esc(nm)}">+</button></span></div>`;
+ let h=`<div class="card plall"><div class="plh"><div><div class="sub" style="margin:0">Overall after your plan</div><div class="big" id="pa-big">–</div></div>
+  <div class="plr"><div id="pa-now"></div><span class="pill" id="pa-pill"></span></div></div>
+  <div class="bar" id="pa-bar"><i></i><u style="left:${S.min}%"></u></div><div class="adv" id="pa-adv"></div></div>
+  <div class="note" style="margin:14px 2px 0">Set how many lectures you plan to <b>skip</b> or <b>attend</b> in each subject, and see your new percentage.</div>`;
+ S.subjects.forEach(sb=>{h+=`<div class="pl" data-sub="${sb.id}"><div class="plh"><b class="plnm">${esc(sb.name)}</b><div class="plr"><span class="plnow"></span> → <b class="plafter"></b></div></div>
+  <div class="bar"><i></i><u style="left:${S.min}%"></u></div>
+  <div class="plc">${stp(sb.id,"s","Skip",sb.name)}${stp(sb.id,"a","Attend",sb.name)}</div>
+  <div class="plf"><span class="pill"></span><span class="note plnote"></span></div></div>`});
+ h+=`<div class="tools"><button id="plclr">Clear plan</button></div>`;
+ $("#fore").innerHTML=h;paintPlan()}
+function paintPlan(){
+ const m=S.min/100;let AH=0,AA=0,TH=0,TA=0,TS=0,TT=0;const bars=[];
+ const fill=(el,pr)=>{const b=el.querySelector(".bar")||el,i=b.querySelector("i");b.classList.toggle("no",pr!=null&&pr<m-1e-9);bars.push([i,pr==null?0:Math.min(100,pr*100)])};
+ S.subjects.forEach(sb=>{const s=stats(sb.id),p=gp(sb.id),nh=s.h+p.s+p.a,na=s.a+p.a;AH+=s.h;AA+=s.a;TH+=nh;TA+=na;TS+=p.s;TT+=p.a;
+  const el=document.querySelector(`.pl[data-sub="${sb.id}"]`);if(!el)return;
+  const pr=nh?na/nh:null,ok=pr!=null&&pr>=m-1e-9,k=calc(nh,na);
+  el.querySelector(".plnow").textContent=pc(s.h?s.a/s.h:null);
+  const af=el.querySelector(".plafter");af.textContent=pc(pr);af.className="plafter"+(pr==null?"":ok?" ok":" no");
+  el.querySelectorAll("output").forEach(o=>{const[,kk]=o.dataset.n.split(":");o.textContent=p[kk]});
+  el.querySelectorAll(".sb").forEach(b=>{const[,kk,d]=b.dataset.pl.split(":");b.disabled=(+d<0&&!p[kk])||(+d>0&&p[kk]>=PLMAX)});
+  const pl=el.querySelector(".pill");pl.hidden=pr==null;pl.className="pill "+(ok?"ok":"no");pl.textContent=ok?"Safe":"Below "+S.min+"%";
+  el.querySelector(".plnote").textContent=pr==null?"No lectures yet":ok?(k.skip>0?`Could still skip ${k.skip} more`:"No more skips left"):`Attend ${k.need} more to reach ${S.min}%`;
+  fill(el,pr)});
+ const all=$("#pa-big");if(!all)return;
+ const pr=TH?TA/TH:null,ok=pr!=null&&pr>=m-1e-9,k=calc(TH,TA);
+ all.textContent=pc(pr);all.className="big"+(pr==null?"":ok?" ok":" no");
+ $("#pa-now").textContent="Now "+pc(AH?AA/AH:null);
+ const pl=$("#pa-pill");pl.hidden=pr==null;pl.className="pill "+(ok?"ok":"no");pl.textContent=ok?"Safe":"Below "+S.min+"%";
+ $("#pa-adv").innerHTML=pr==null?"Mark a lecture or add held lectures to start.":
+  `${TS||TT?`Skipping <b>${pl_(TS,"lecture")}</b> and attending <b>${pl_(TT,"lecture")}</b>. `:"No plan yet. "}${ok?(k.skip>0?`You could still skip <b>${pl_(k.skip,"more lecture")}</b>.`:"No more skips left."):`You would need to attend <b>${pl_(k.need,"more lecture")}</b> in a row.`}`;
+ fill($("#pa-bar").parentNode.querySelector("#pa-bar"),pr);
+ requestAnimationFrame(()=>requestAnimationFrame(()=>bars.forEach(([i,w])=>{i.style.width=w+"%"})))}
+const pl_=(n,w)=>n+" "+w+(n===1?"":"s");
 
 function abbr(n){const w=n.trim().split(/\s+/);return w.length>1?w.map(x=>x[0]).join("").toUpperCase().slice(0,4):n.slice(0,5)}
 function renderReg(){
  const ds=Object.keys(S.log).sort().reverse();let h=``;
  if(!ds.length||!S.subjects.length)h+=`<div class="card empty">No records yet.</div>`;
  else h+=`<div class="card scroll reg"><table><tr><th>Date</th>${S.subjects.map(s=>`<th title="${esc(s.name)}">${esc(abbr(s.name))}</th>`).join("")}</tr>
- ${ds.map(d=>`<tr><td>${fmt(d,{weekday:"short",day:"numeric",month:"short"})}</td>${S.subjects.map(s=>{const v=S.log[d][s.id];return`<td class="cell ${v||""}" data-d="${d}" data-id="${s.id}">${v?SYM[v]:"·"}</td>`}).join("")}</tr>`).join("")}</table></div>
- <div class="note">Tap a cell to edit.</div>`;
+ ${ds.map(d=>`<tr><td>${fmt(d,{weekday:"short",day:"numeric",month:"short"})}</td>${S.subjects.map(s=>{const a=marks(S.log[d][s.id]);if(a.length>1)return`<td class="cell M" data-d="${d}" data-id="${s.id}" data-m="1" title="${a.length} lectures">${a.map(x=>`<span class="${x}">${x?SYM[x]:"·"}</span>`).join("")}</td>`;const v=a[0];return`<td class="cell ${v||""}" data-d="${d}" data-id="${s.id}">${v?SYM[v]:"·"}</td>`}).join("")}</tr>`).join("")}</table></div>
+ <div class="note">Tap a cell to edit. A cell with several lectures opens that day.</div>`;
  h+=`<div class="tools"><button id="exp">Backup</button><button id="imp">Restore</button><button id="rst">Reset</button></div><div id="bkp"></div>
  <div class="note">Saved on this device only.</div>`;
  $("#reg").innerHTML=h}
@@ -382,22 +455,31 @@ function show(t){
  if(t==="today"){enter=true;renderToday()}window.scrollTo(0,0)}
 
 document.addEventListener("click",e=>{
+ if(e.target.id==="xo")return closeXP();
  const t=e.target.closest("button,td.cell");if(!t)return;
+ if(t.id==="xadd"){buzz("C");return openXP()}
+ if(t.id==="xcancel"){return closeXP()}
+ if(t.dataset.xs){buzz("P");return addSlot(t.dataset.xs)}
+ if(t.dataset.xr){const[id,q]=t.dataset.xr.split(":"),arr=getArr(cur,id);arr.splice(+q,1);putArr(cur,id,arr);buzz("C");save();return renderMost()}
+ if(t.dataset.pl){const[id,k,d]=t.dataset.pl.split(":");const p=S.plan[id]||(S.plan[id]={s:0,a:0});p[k]=Math.min(PLMAX,Math.max(0,(+p[k]||0)+ +d));if(!p.s&&!p.a)delete S.plan[id];buzz("C");save();return paintPlan()}
+ if(t.id==="plclr"){buzz("C");S.plan={};save();return paintPlan()}
  if(t.id==="gin"||t.id==="wg"){buzz("C");return signIn()}
  if(t.id==="gout"){buzz("C");return signOut()}
  if(t.dataset.t){buzz("C");return show(t.dataset.t)}
- if(t.classList.contains("b")&&t.dataset.v){buzz(t.dataset.v);return setMark(cur,t.dataset.id,t.dataset.v)}
+ if(t.classList.contains("b")&&t.dataset.v){buzz(t.dataset.v);return setMark(cur,t.dataset.id,t.dataset.v,+t.dataset.k||0)}
  if(t.id==="td"){cur=today;enter=true;return renderToday()}
- if(t.classList.contains("cell")){buzz("C");const d=t.dataset.d,id=t.dataset.id,o=(S.log[d]||{})[id],n={undefined:"P",P:"A",A:"C",C:undefined}[o],day=S.log[d];
-  if(n)day[id]=n;else delete day[id];if(!Object.keys(day).length)delete S.log[d];save();return renderMost()}
+ if(t.classList.contains("cell")){buzz("C");const d=t.dataset.d,id=t.dataset.id;
+  if(t.dataset.m){cur=d;enter=true;return show("today")}
+  const o=getArr(d,id)[0],n={undefined:"P",P:"A",A:"C",C:undefined}[o];
+  putArr(d,id,[n||""]);save();return renderMost()}
  if(t.id==="addb"){const names=$("#bulk").value.split("\n").map(x=>x.trim().slice(0,40)).filter(Boolean);
   names.forEach(n=>{const id="s"+Date.now().toString(36)+Math.random().toString(36).slice(2,6);S.subjects.push({id,name:n});S.open[id]={h:0,a:0}});
   save();return renderAll()}
  if(t.dataset.del){if(!t.dataset.arm){t.dataset.arm=1;t.textContent="Confirm?";setTimeout(()=>{t.dataset.arm="";t.textContent="Remove"},3000);return}
-  const id=t.dataset.del;S.subjects=S.subjects.filter(s=>s.id!==id);delete S.open[id];
+  const id=t.dataset.del;S.subjects=S.subjects.filter(s=>s.id!==id);delete S.open[id];delete S.plan[id];
   for(const d in S.log){delete S.log[d][id];if(!Object.keys(S.log[d]).length)delete S.log[d]}save();return renderAll()}
  if(t.id==="exp"){$("#bkp").innerHTML='<textarea id="bk" rows="5" readonly></textarea><div class="note">Copy and keep this text.</div>';
-  const x=$("#bk");x.value=JSON.stringify(S);x.focus();x.select();try{navigator.clipboard.writeText(x.value)}catch(e){}}
+  const x=$("#bk");x.value=JSON.stringify(S);x.focus();x.select();try{navigator.clipboard.writeText(x.value).catch(()=>{})}catch(e){}}
  if(t.id==="imp")$("#bkp").innerHTML='<textarea id="bk" rows="5" placeholder="Paste backup"></textarea><div class="tools"><button id="go">Restore now</button></div><div class="note" id="bm"></div>';
  if(t.id==="go"){try{const o=JSON.parse($("#bk").value);if(o&&typeof o.log==="object"&&o.open&&(o.v!==2||Array.isArray(o.subjects))){S=migrate(o);save();renderAll()}else $("#bm").textContent="That text is not an attendance backup."}catch(x){$("#bm").textContent="That text could not be read."}}
  if(t.id==="rst"){if(!t.dataset.arm){t.dataset.arm=1;t.textContent="Confirm?";setTimeout(()=>{t.dataset.arm="";t.textContent="Reset"},4000)}
@@ -432,9 +514,7 @@ document.addEventListener("change",e=>{
  else if(t.dataset.o){(S.open[t.dataset.id]||(S.open[t.dataset.id]={h:0,a:0}))[t.dataset.o]=Math.max(0,+t.value||0);save();renderMost()}
  else if(t.dataset.n){const s=S.subjects.find(x=>x.id===t.dataset.n),v=t.value.trim();if(v)s.name=v;else t.value=s.name;save();renderMost()}
 });
-document.addEventListener("input",e=>{
- if(e.target.id==="fn"){fN=Math.max(0,+e.target.value||0);foreRes()}
- if(e.target.id==="fm"){fM=Math.max(0,+e.target.value||0);foreRes()}});
+document.addEventListener("keydown",e=>{if(e.key==="Escape")closeXP()});
 document.addEventListener("visibilitychange",()=>{
  const n=iso(new Date());if(!document.hidden&&n!==today){if(cur===today)cur=n;today=n;renderMost()}});
 (function(){let seen=null;try{seen=localStorage.getItem("attendance_welcome_v1")}catch(e){}
