@@ -132,7 +132,11 @@ footer .ig:active .gf,footer .ig:focus-visible .gf{fill:url(#igg)}
 .mod p{margin:0 0 12px;color:var(--ink);line-height:1.55}
 .mod .by{color:var(--mute);font-size:14px;margin:4px 0 18px}
 .mod .btn{width:100%}
-.hid{position:fixed;left:-200px;top:0;opacity:0;pointer-events:none}
+.btn.cd{position:relative;overflow:hidden;opacity:.85;cursor:default}
+.btn.cd::before{content:"";position:absolute;inset:0;background:rgba(255,255,255,.28);transform-origin:left;transform:scaleX(0);animation:cdfill 10s linear forwards}
+.btn.cd span{position:relative}
+@keyframes cdfill{to{transform:scaleX(1)}}
+.hid{position:fixed;left:0;top:0;opacity:.01;pointer-events:none;z-index:-1;display:block}
 .leg{font-size:13px;color:var(--mute);margin-top:10px;line-height:1.7}
 @media (min-width:720px){
  body{padding-bottom:40px}
@@ -166,6 +170,7 @@ footer .ig:active .gf,footer .ig:focus-visible .gf{fill:url(#igg)}
 </footer>
 <div class="ov" id="wel" role="dialog" aria-modal="true" aria-labelledby="wt" hidden><div class="mod" id="wbody"></div></div>
 <label class="hid" id="hl" aria-hidden="true"><input type="checkbox" switch id="hs" tabindex="-1"></label>
+<label class="hid" id="hl2" aria-hidden="true"><input type="checkbox" switch tabindex="-1"></label>
 <script>
 const KEY="attendance_tracker_v1",SYM={P:"✔",A:"✘",C:"−"},LBL={P:"Attended",A:"Absent",C:"Cancelled"};
 const $=s=>document.querySelector(s);
@@ -193,7 +198,7 @@ function buzz(k){
  try{
   if(navigator.vibrate&&navigator.vibrate(k==="P"?[16]:k==="A"?[28,40,28]:[9]))return;
   const l=$("#hl");if(!l)return;
-  l.click();if(k==="A")setTimeout(()=>l.click(),80)
+  l.click();if(k==="A"){const l2=$("#hl2");if(l2)l2.click()}
  }catch(e){}}
 
 function stats(id){const o=S.open[id]||{};let h=+o.h||0,a=+o.a||0;
@@ -344,14 +349,19 @@ document.addEventListener("visibilitychange",()=>{
  if(seen)return;const w=$("#wel"),b=$("#wbody");w.hidden=false;
  const close=()=>{try{localStorage.setItem("attendance_welcome_v1","1")}catch(e){}
   w.classList.add("out");setTimeout(()=>{w.hidden=true},260);document.removeEventListener("keydown",onKey)};
- const onKey=e=>{if(e.key==="Escape")close()};
+ let locked=false,tick=null;
+ const onKey=e=>{if(e.key==="Escape"&&!locked)close()};
  const step2=()=>{const n=S.name?esc(S.name):"";
   b.innerHTML=`<h2 id="wt">${n?"Hello, "+n:"Hello, and welcome"}</h2>
   <p>This tool was made with care to help you manage your attendance and your focus without the stress.</p>
   <p>College is so much more than lectures. It’s friends, laughter and growing into yourself. I hope this helps you make time for both: bunking with friends, and the productivity to look after yourself and your goals.</p>
   <p>Be kind to yourself${n?", "+n:""}, and enjoy every bit of the journey.</p><div class="by">With warmth, Kunsh S Agarwal</div>
-  <button class="btn pri" id="wok">Let’s begin</button>`;
-  const ok=$("#wok");ok.onclick=close;setTimeout(()=>ok.focus(),60)};
+  <button class="btn pri cd" id="wok" disabled><span>Let’s begin (10)</span></button>`;
+  const ok=$("#wok");let left=10;locked=true;
+  tick=setInterval(()=>{left--;
+   if(left>0){ok.firstChild.textContent="Let’s begin ("+left+")";return}
+   clearInterval(tick);locked=false;ok.disabled=false;ok.classList.remove("cd");ok.textContent="Let’s begin";buzz("P");ok.focus()},1000);
+  ok.onclick=()=>{clearInterval(tick);close()}};
  const step1=()=>{b.innerHTML=`<h2 id="wt">Welcome</h2><p>What should we call you?</p>
   <input type="text" id="wn" maxlength="30" autocomplete="given-name" placeholder="Your name" aria-label="Your name">
   <button class="btn pri" id="wgo" style="margin-top:14px">Continue</button>
