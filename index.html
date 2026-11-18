@@ -29,7 +29,7 @@ padding:env(safe-area-inset-top) env(safe-area-inset-right) calc(76px + env(safe
 .narrow{max-width:720px;margin:0 auto}
 nav{position:fixed;left:0;right:0;bottom:0;z-index:20;background:var(--card);border-top:1px solid var(--line);padding:6px max(clamp(8px,3vw,16px),env(safe-area-inset-right)) calc(6px + env(safe-area-inset-bottom)) max(clamp(8px,3vw,16px),env(safe-area-inset-left))}
 nav .in{display:flex;gap:4px;max-width:560px;margin:0 auto}
-nav button{flex:1;min-height:46px;border:0;border-radius:12px;background:transparent;color:var(--mute);font-size:13px;font-weight:600;line-height:1.1;font-family:inherit;touch-action:manipulation;cursor:pointer;transition:background-color .25s,color .25s,transform .12s}
+nav button{flex:1;min-width:0;padding:0 2px;min-height:46px;border:0;border-radius:12px;background:transparent;color:var(--mute);font-size:13px;font-weight:600;line-height:1.1;font-family:inherit;touch-action:manipulation;cursor:pointer;transition:background-color .25s,color .25s,transform .12s}
 nav button:active{transform:scale(.94)}
 nav button[aria-selected=true]{background:var(--acc);color:var(--on)}
 button,input,label,select,summary{touch-action:manipulation}
@@ -183,6 +183,18 @@ footer .ig:active .gf,footer .ig:focus-visible .gf{fill:url(#igg)}
  .tgrid{display:grid;grid-template-columns:340px 1fr;gap:24px;align-items:start}
  .tgrid aside{position:sticky;top:76px}
 }
+.av{flex:none!important;width:46px;min-width:46px!important;height:46px;padding:0!important;margin-left:6px;border-radius:50%!important;display:grid;place-items:center;overflow:hidden;border:1.5px solid var(--line)!important}
+.av svg{width:26px;height:26px}
+.av img{width:100%;height:100%;object-fit:cover;display:block;border-radius:50%}
+.av b{font-size:18px;font-weight:700;line-height:1}
+.av.has{border:0!important}
+nav button.av[aria-selected=true]{border-color:var(--acc)!important}
+nav button.av.has[aria-selected=true]{background:transparent;box-shadow:0 0 0 2px var(--card),0 0 0 4px var(--acc)}
+.pf{width:44px;height:44px;border-radius:50%;object-fit:cover;flex:none}
+.acc .l{display:flex;align-items:center;gap:12px;min-width:0}
+.oc{display:inline-block;width:1em;height:1em;vertical-align:-.14em}
+.tools button.dng{color:var(--no)}
+.tools button.armed,.tools button.dng.armed,.mv button.armed,.mv button.del.armed{background:var(--no);border-color:var(--no);color:var(--on);font-weight:600}
 @media (prefers-reduced-motion:reduce){*,*::before,*::after{animation:none!important;transition:none!important}}
 </style>
 </head>
@@ -192,12 +204,14 @@ footer .ig:active .gf,footer .ig:focus-visible .gf{fill:url(#igg)}
 <button role="tab" data-t="fore" aria-selected="false">Forecast</button>
 <button role="tab" data-t="reg" aria-selected="false">Register</button>
 <button role="tab" data-t="subj" aria-selected="false">Subjects</button>
+<button role="tab" class="av" id="navacct" data-t="account" aria-label="Account" aria-selected="false"></button>
 </div></nav>
 <main class="wrap">
 <section id="today" class="view"><div id="tmain"></div></section>
 <section id="fore" class="view narrow" hidden></section>
 <section id="reg" class="view narrow" hidden></section>
 <section id="subj" class="view narrow" hidden></section>
+<section id="account" class="view narrow" hidden></section>
 </main>
 <footer>Created by Kunsh S Agarwal
 <a class="soc li" href="https://www.linkedin.com/in/kunshsumitagarwal" target="_blank" rel="noopener noreferrer" aria-label="LinkedIn"><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="2" y="2" width="20" height="20" rx="3.5" fill="currentColor"/><g fill="var(--bg)"><rect x="6" y="9.6" width="2.5" height="8"/><circle cx="7.25" cy="6.8" r="1.5"/><path d="M10.8 9.6h2.4v1.1c.4-.7 1.3-1.3 2.6-1.3 2.3 0 2.8 1.5 2.8 3.4v4.8h-2.5v-4.2c0-1-.1-1.9-1.3-1.9s-1.5.9-1.5 1.9v4.2h-2.5z"/></g></svg></a>
@@ -210,7 +224,8 @@ footer .ig:active .gf,footer .ig:focus-visible .gf{fill:url(#igg)}
 <label class="hid" id="hl" aria-hidden="true"><input type="checkbox" switch id="hs" tabindex="-1"></label>
 <label class="hid" id="hl2" aria-hidden="true"><input type="checkbox" switch tabindex="-1"></label>
 <script>
-const KEY="attendance_tracker_v1",SYM={P:"✔",A:"✘",C:"−"},LBL={P:"Attended",A:"Absent",C:"Cancelled"};
+const OC='<svg class="oc" viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="8" fill="none" stroke="currentColor" stroke-width="3"/></svg>';
+const KEY="attendance_tracker_v1",SYM={P:"✔",A:"✘",C:OC},LBL={P:"Attended",A:"Bunked",C:"Cancelled"};
 const $=s=>document.querySelector(s);
 const esc=s=>String(s).replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
 const RM=matchMedia("(prefers-reduced-motion:reduce)").matches;
@@ -281,6 +296,8 @@ function firstSync(d){
  askChoice(d)}
 function onUser(u){
  user=u;if(unsub){unsub();unsub=null}
+ try{if(u&&u.photoURL)localStorage.setItem(PK,u.photoURL);else localStorage.removeItem(PK)}catch(e){}
+ const nb=$("#navacct");if(nb)nb.dataset.src="";paintAvatar();
  authMsg="";firstSnap=true;
  if(!u){syncState="off";renderAcct();return}
  syncState="sync";renderAcct();
@@ -300,12 +317,26 @@ async function signIn(){
   else if(e.code!=="auth/popup-closed-by-user"&&e.code!=="auth/cancelled-popup-request"){authMsg="Sign-in failed ("+(e.code||"error")+")";renderAcct()}}}
 function signOut(){if(auth)auth.signOut()}
 const GIC='<svg viewBox="0 0 48 48" width="20" height="20" aria-hidden="true"><path fill="#EA4335" d="M24 9.5c3.5 0 6.6 1.2 9.1 3.6l6.8-6.8C35.8 2.4 30.3 0 24 0 14.6 0 6.5 5.4 2.6 13.2l7.9 6.1C12.4 13.6 17.7 9.5 24 9.5z"/><path fill="#4285F4" d="M46.5 24.5c0-1.6-.1-3.1-.4-4.5H24v9h12.7c-.6 3-2.3 5.5-4.8 7.2l7.6 5.9c4.4-4.1 7-10.1 7-17.6z"/><path fill="#FBBC05" d="M10.5 28.7c-.5-1.5-.8-3-.8-4.7s.3-3.2.8-4.7l-7.9-6.1C.9 16.4 0 20.1 0 24s.9 7.6 2.6 10.8l7.9-6.1z"/><path fill="#34A853" d="M24 48c6.5 0 11.9-2.1 15.9-5.8l-7.6-5.9c-2.1 1.4-4.9 2.3-8.3 2.3-6.3 0-11.6-4.1-13.5-9.8l-7.9 6.1C6.5 42.6 14.6 48 24 48z"/></svg>';
+const PK="bunkit_photo",AVI='<svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="8.5" r="4.2" fill="currentColor"/><path d="M4 20.5c0-4.2 3.6-6.6 8-6.6s8 2.4 8 6.6z" fill="currentColor"/></svg>';
+const big=u=>u?u.replace(/=s\d+(-c)?$/,"=s160-c"):"";
+function paintAvatar(){
+ const b=$("#navacct");if(!b)return;
+ let url="";if(user)url=big(user.photoURL||"");else{try{url=localStorage.getItem(PK)||""}catch(e){}}
+ const nm=user&&(user.displayName||user.email)||"";
+ b.setAttribute("aria-label",nm?"Account, "+nm:"Account");
+ const fb=()=>{b.classList.remove("has");b.innerHTML=nm?`<b>${esc(nm.trim()[0].toUpperCase())}</b>`:AVI};
+ if(!url){fb();return}
+ if(b.dataset.src===url&&b.querySelector("img"))return;
+ const im=new Image();im.alt="";im.referrerPolicy="no-referrer";im.draggable=false;
+ im.onerror=fb;im.onload=()=>{b.dataset.src=url;b.classList.add("has");b.innerHTML="";b.appendChild(im)};
+ if(!b.querySelector("img"))fb();
+ im.src=url}
 function renderAcct(){
  const el=$("#acct");if(!el||!FB.apiKey)return;
  let h;
  if(user){
   const st=!navigator.onLine||syncState==="off2"?"Offline · changes will sync when you’re back online":syncState==="sync"?"Syncing…":syncState==="err"?"Couldn’t sync · will retry on your next change":"Synced on all your devices";
-  h=`<div class="acc"><div class="who"><b>${esc(user.displayName||"Signed in")}</b><div class="note" style="margin:0">${esc(user.email||"")}</div></div><button class="btn" id="gout">Sign out</button></div>
+  h=`<div class="acc"><div class="l">${user.photoURL?`<img class="pf" src="${esc(big(user.photoURL))}" alt="" referrerpolicy="no-referrer">`:""}<div class="who"><b>${esc(user.displayName||"Signed in")}</b><div class="note" style="margin:0">${esc(user.email||"")}</div></div></div><button class="btn" id="gout">Sign out</button></div>
   <div class="sy ${syncState==="ok"?"ok":""}"><i></i>${st}</div>`}
  else h=`<b>Sync across devices</b><div class="note" style="margin:4px 0 12px">Sign in with Google to see the same attendance on every device.</div>
   <button class="btn gbtn" id="gin">${GIC}<span>Continue with Google</span></button>${authMsg?`<div class="note" style="color:var(--no)">${esc(authMsg)}</div>`:""}`;
@@ -327,8 +358,10 @@ const getArr=(d,id)=>marks((S.log[d]||{})[id]);
 function putArr(d,id,arr){const day=S.log[d]||(S.log[d]={});
  if(arr.length<=1){if(arr[0])day[id]=arr[0];else delete day[id]}else day[id]=arr;
  if(!Object.keys(day).length)delete S.log[d]}
-function stats(id){const o=S.open[id]||{};let h=+o.h||0,a=+o.a||0;
+function logStats(id){let h=0,a=0;
  for(const d in S.log)marks(S.log[d][id]).forEach(v=>{if(v==="P"){h++;a++}else if(v==="A")h++});return{h,a}}
+function stats(id){const o=S.open[id]||{},l=logStats(id);return{h:(+o.h||0)+l.h,a:(+o.a||0)+l.a}}
+function paintCounts(){document.querySelectorAll("#subj input[data-o]").forEach(i=>{const v=stats(i.dataset.id)[i.dataset.o];if(i.value===""||+i.value!==v)i.value=v})}
 function totals(){let h=0,a=0;S.subjects.forEach(s=>{const x=stats(s.id);h+=x.h;a+=x.a});return{h,a}}
 function calc(h,a){const m=S.min/100;if(!h)return{p:null,skip:0,need:0,ok:true};
  const ok=a/h>=m-1e-9;let skip=0,need=0;
@@ -376,13 +409,16 @@ function renderToday(){
  <div class="adv">${advice(c)}</div></div></aside>
  <div><div class="datebar"><b>${cur===today?"Today, ":""}${fmt(cur,{weekday:"long",day:"numeric",month:"long",year:"numeric"})}</b>
  <span><input type="date" id="dt" value="${cur}" max="${today}" aria-label="Date to mark">${cur!==today?` <button class="btn" id="td">Back to today</button>`:""}</span></div>
- <div class="lgrow"><div class="legend">✔ Attended &nbsp; ✘ Absent &nbsp; − Cancelled (not counted)</div>${S.subjects.length?`<button class="xbtn" id="xadd">＋ Extra lecture</button>`:""}</div>${list}</div></div>`;
+ <div class="lgrow"><div class="legend">✔ Attended &nbsp; ✘ Bunked &nbsp; ${OC} Cancelled (not counted)</div>${S.subjects.length?`<button class="xbtn" id="xadd">＋ Extra lecture</button>`:""}</div>${list}</div></div>`;
  if(c.p==null){shown=null;shownW=0;return}
- const to=c.p*100,from=shown==null?0:shown,el=$("#bigp"),f=$("#fill");
+ const to=c.p*100,from=shown==null?0:shown,el=$("#bigp"),f=$("#fill"),d=(shown==null&&!RM)?280:0;
  f.style.width=shownW+"%";
- requestAnimationFrame(()=>requestAnimationFrame(()=>{f.style.width=Math.min(100,to)+"%"}));
- if(!RM&&from!==to){const t0=performance.now();(function step(n){const k=Math.min(1,(n-t0)/650),e=1-Math.pow(1-k,3);
-  el.textContent=(from+(to-from)*e).toFixed(1)+"%";if(k<1)requestAnimationFrame(step)})(t0)}
+ if(d)el.textContent="0.0%";
+ setTimeout(()=>{
+  requestAnimationFrame(()=>requestAnimationFrame(()=>{f.style.width=Math.min(100,to)+"%"}));
+  if(!RM&&from!==to){const t0=performance.now();(function step(n){if(!el.isConnected)return;const k=Math.min(1,(n-t0)/700),e=1-Math.pow(1-k,3);
+   el.textContent=(from+(to-from)*e).toFixed(1)+"%";if(k<1)requestAnimationFrame(step)})(t0)}
+  else if(d)el.textContent=pc(c.p)},d);
  shown=to;shownW=Math.min(100,to)}
 
 const PLMAX=60;
@@ -393,10 +429,10 @@ function renderFore(){
  let h=`<div class="card plall"><div class="plh"><div><div class="sub" style="margin:0">Overall after your plan</div><div class="big" id="pa-big">–</div></div>
   <div class="plr"><div id="pa-now"></div><span class="pill" id="pa-pill"></span></div></div>
   <div class="bar" id="pa-bar"><i></i><u style="left:${S.min}%"></u></div><div class="adv" id="pa-adv"></div></div>
-  <div class="note" style="margin:14px 2px 0">Set how many lectures you plan to <b>skip</b> or <b>attend</b> in each subject, and see your new percentage.</div>`;
+  <div class="note" style="margin:14px 2px 0">Set how many lectures you plan to <b>bunk</b> or <b>attend</b> in each subject, and see your new percentage.</div>`;
  S.subjects.forEach(sb=>{h+=`<div class="pl" data-sub="${sb.id}"><div class="plh"><b class="plnm">${esc(sb.name)}</b><div class="plr"><span class="plnow"></span> → <b class="plafter"></b></div></div>
   <div class="bar"><i></i><u style="left:${S.min}%"></u></div>
-  <div class="plc">${stp(sb.id,"s","Skip",sb.name)}${stp(sb.id,"a","Attend",sb.name)}</div>
+  <div class="plc">${stp(sb.id,"s","Bunk",sb.name)}${stp(sb.id,"a","Attend",sb.name)}</div>
   <div class="plf"><span class="pill"></span><span class="note plnote"></span></div></div>`});
  h+=`<div class="tools"><button id="plclr">Clear plan</button></div>`;
  $("#fore").innerHTML=h;paintPlan()}
@@ -411,7 +447,7 @@ function paintPlan(){
   el.querySelectorAll("output").forEach(o=>{const[,kk]=o.dataset.n.split(":");o.textContent=p[kk]});
   el.querySelectorAll(".sb").forEach(b=>{const[,kk,d]=b.dataset.pl.split(":");b.disabled=(+d<0&&!p[kk])||(+d>0&&p[kk]>=PLMAX)});
   const pl=el.querySelector(".pill");pl.hidden=pr==null;pl.className="pill "+(ok?"ok":"no");pl.textContent=ok?"Safe":"Below "+S.min+"%";
-  el.querySelector(".plnote").textContent=pr==null?"No lectures yet":ok?(k.skip>0?`Could still skip ${k.skip} more`:"No more skips left"):`Attend ${k.need} more to reach ${S.min}%`;
+  el.querySelector(".plnote").textContent=pr==null?"No lectures yet":ok?(k.skip>0?`Could still bunk ${k.skip} more`:"No more bunks left"):`Attend ${k.need} more to reach ${S.min}%`;
   fill(el,pr)});
  const all=$("#pa-big");if(!all)return;
  const pr=TH?TA/TH:null,ok=pr!=null&&pr>=m-1e-9,k=calc(TH,TA);
@@ -419,10 +455,13 @@ function paintPlan(){
  $("#pa-now").textContent="Now "+pc(AH?AA/AH:null);
  const pl=$("#pa-pill");pl.hidden=pr==null;pl.className="pill "+(ok?"ok":"no");pl.textContent=ok?"Safe":"Below "+S.min+"%";
  $("#pa-adv").innerHTML=pr==null?"Mark a lecture or add held lectures to start.":
-  `${TS||TT?`Skipping <b>${pl_(TS,"lecture")}</b> and attending <b>${pl_(TT,"lecture")}</b>. `:"No plan yet. "}${ok?(k.skip>0?`You could still skip <b>${pl_(k.skip,"more lecture")}</b>.`:"No more skips left."):`You would need to attend <b>${pl_(k.need,"more lecture")}</b> in a row.`}`;
+  `${TS||TT?`Bunking <b>${pl_(TS,"lecture")}</b> and attending <b>${pl_(TT,"lecture")}</b>. `:"No plan yet. "}${ok?(k.skip>0?`You could still bunk <b>${pl_(k.skip,"more lecture")}</b>.`:"No more bunks left."):`You would need to attend <b>${pl_(k.need,"more lecture")}</b> in a row.`}`;
  fill($("#pa-bar").parentNode.querySelector("#pa-bar"),pr);
  requestAnimationFrame(()=>requestAnimationFrame(()=>bars.forEach(([i,w])=>{i.style.width=w+"%"})))}
 const pl_=(n,w)=>n+" "+w+(n===1?"":"s");
+function animFore(){const v=$("#fore"),bs=v.querySelectorAll(".bar i");if(!bs.length)return;
+ bs.forEach(i=>{i.style.transition="none";i.style.width="0%"});void v.offsetWidth;
+ bs.forEach(i=>{i.style.transition=""});setTimeout(paintPlan,200)}
 
 function abbr(n){const w=n.trim().split(/\s+/);return w.length>1?w.map(x=>x[0]).join("").toUpperCase().slice(0,4):n.slice(0,5)}
 function renderReg(){
@@ -431,28 +470,35 @@ function renderReg(){
  else h+=`<div class="card scroll reg"><table><tr><th>Date</th>${S.subjects.map(s=>`<th title="${esc(s.name)}">${esc(abbr(s.name))}</th>`).join("")}</tr>
  ${ds.map(d=>`<tr><td>${fmt(d,{weekday:"short",day:"numeric",month:"short"})}</td>${S.subjects.map(s=>{const a=marks(S.log[d][s.id]);if(a.length>1)return`<td class="cell M" data-d="${d}" data-id="${s.id}" data-m="1" title="${a.length} lectures">${a.map(x=>`<span class="${x}">${x?SYM[x]:"·"}</span>`).join("")}</td>`;const v=a[0];return`<td class="cell ${v||""}" data-d="${d}" data-id="${s.id}">${v?SYM[v]:"·"}</td>`}).join("")}</tr>`).join("")}</table></div>
  <div class="note">Tap a cell to edit. A cell with several lectures opens that day.</div>`;
- h+=`<div class="tools"><button id="exp">Backup</button><button id="imp">Restore</button><button id="rst">Reset</button></div><div id="bkp"></div>
- <div class="note">Saved on this device only.</div>`;
  $("#reg").innerHTML=h}
 
 function renderSubj(){
- let h=(FB.apiKey?'<div class="card" id="acct"></div>':"")+`<div class="card fin"><label>Your name<input type="text" id="uname" maxlength="30" autocomplete="given-name" value="${esc(S.name||"")}"></label></div><div class="card">`;
- S.subjects.forEach(s=>{const o=S.open[s.id]||{h:0,a:0};
+ let h=`<div class="card fin"><label>Your name<input type="text" id="uname" maxlength="30" autocomplete="given-name" value="${esc(S.name||"")}"></label></div><div class="card">${S.subjects.length?`<div class="note" style="margin:0 0 4px">Held and attended update automatically as you mark lectures. You can also edit them to correct a total.</div>`:""}`;
+ S.subjects.forEach(s=>{const o=stats(s.id);
   h+=`<div class="srow" data-row="${s.id}"><div class="top"><span class="grip" title="Hold and drag" aria-label="Hold and drag to reorder">⠿</span><input class="nmi" data-n="${s.id}" value="${esc(s.name)}" maxlength="40" aria-label="Subject name" autocomplete="off"></div>
-  <label>Held<input type="number" inputmode="numeric" min="0" data-o="h" data-id="${s.id}" value="${o.h||0}"></label>
-  <label>Attended<input type="number" inputmode="numeric" min="0" data-o="a" data-id="${s.id}" value="${o.a||0}"></label>
+  <label>Classes held<input type="number" inputmode="numeric" min="0" data-o="h" data-id="${s.id}" value="${o.h}"></label>
+  <label>Attended<input type="number" inputmode="numeric" min="0" data-o="a" data-id="${s.id}" value="${o.a}"></label>
   <div class="mv"><button class="del" data-del="${s.id}">Remove</button></div></div>`});
  h+=`<textarea id="bulk" rows="3" aria-label="New subjects" style="margin-top:12px" placeholder="New subjects, one per line"></textarea>
  <div class="tools"><button class="btn pri" id="addb">Add</button></div></div>`;
- $("#subj").innerHTML=h;renderAcct()}
+ $("#subj").innerHTML=h}
 
-const renderMost=()=>{renderToday();renderFore();renderReg()};
+function renderAccount(){
+ $("#account").innerHTML=(FB.apiKey?'<div class="card" id="acct"></div>':"")+`<div class="card"><b>Backup and restore</b>
+ <div class="note" style="margin:4px 0 0">Backup gives you text you can keep. Restore loads it back.</div>
+ <div class="tools"><button id="exp">Backup</button><button id="imp">Restore</button></div><div id="bkp"></div></div>
+ <div class="card"><b>Reset</b>
+ <div class="note" style="margin:4px 0 0">Erases all your subjects and attendance${FB.apiKey?", including the synced copy if you’re signed in":""}. Your name is kept.</div>
+ <div class="tools"><button class="dng" id="rst">Reset</button></div></div>
+ <div class="note">${FB.apiKey?"Without signing in, your data is saved on this device only.":"Your data is saved on this device only."}</div>`;
+ renderAcct()}
+const renderMost=()=>{renderToday();renderFore();renderReg();paintCounts()};
 const renderAll=()=>{renderMost();renderSubj()};
 
 function show(t){
  document.querySelectorAll("nav button").forEach(b=>b.setAttribute("aria-selected",b.dataset.t===t));
  document.querySelectorAll(".view").forEach(v=>{const on=v.id===t;v.hidden=!on;v.classList.remove("in");if(on){void v.offsetWidth;v.classList.add("in");clearTimeout(v._t);v._t=setTimeout(()=>v.classList.remove("in"),800)}});
- if(t==="today"){enter=true;renderToday()}window.scrollTo(0,0)}
+ if(t==="today"){enter=true;shown=null;shownW=0;renderToday()}if(t==="fore")animFore();window.scrollTo(0,0)}
 
 document.addEventListener("click",e=>{
  if(e.target.id==="xo")return closeXP();
@@ -463,7 +509,7 @@ document.addEventListener("click",e=>{
  if(t.dataset.xr){const[id,q]=t.dataset.xr.split(":"),arr=getArr(cur,id);arr.splice(+q,1);putArr(cur,id,arr);buzz("C");save();return renderMost()}
  if(t.dataset.pl){const[id,k,d]=t.dataset.pl.split(":");const p=S.plan[id]||(S.plan[id]={s:0,a:0});p[k]=Math.min(PLMAX,Math.max(0,(+p[k]||0)+ +d));if(!p.s&&!p.a)delete S.plan[id];buzz("C");save();return paintPlan()}
  if(t.id==="plclr"){buzz("C");S.plan={};save();return paintPlan()}
- if(t.id==="gin"||t.id==="wg"){buzz("C");return signIn()}
+ if(t.id==="gin"){buzz("C");return signIn()}
  if(t.id==="gout"){buzz("C");return signOut()}
  if(t.dataset.t){buzz("C");return show(t.dataset.t)}
  if(t.classList.contains("b")&&t.dataset.v){buzz(t.dataset.v);return setMark(cur,t.dataset.id,t.dataset.v,+t.dataset.k||0)}
@@ -475,15 +521,15 @@ document.addEventListener("click",e=>{
  if(t.id==="addb"){const names=$("#bulk").value.split("\n").map(x=>x.trim().slice(0,40)).filter(Boolean);
   names.forEach(n=>{const id="s"+Date.now().toString(36)+Math.random().toString(36).slice(2,6);S.subjects.push({id,name:n});S.open[id]={h:0,a:0}});
   save();return renderAll()}
- if(t.dataset.del){if(!t.dataset.arm){t.dataset.arm=1;t.textContent="Confirm?";setTimeout(()=>{t.dataset.arm="";t.textContent="Remove"},3000);return}
+ if(t.dataset.del){if(!t.dataset.arm){t.dataset.arm=1;t.classList.add("armed");t.textContent="Confirm?";setTimeout(()=>{t.dataset.arm="";t.classList.remove("armed");t.textContent="Remove"},3000);return}
   const id=t.dataset.del;S.subjects=S.subjects.filter(s=>s.id!==id);delete S.open[id];delete S.plan[id];
   for(const d in S.log){delete S.log[d][id];if(!Object.keys(S.log[d]).length)delete S.log[d]}save();return renderAll()}
  if(t.id==="exp"){$("#bkp").innerHTML='<textarea id="bk" rows="5" readonly></textarea><div class="note">Copy and keep this text.</div>';
   const x=$("#bk");x.value=JSON.stringify(S);x.focus();x.select();try{navigator.clipboard.writeText(x.value).catch(()=>{})}catch(e){}}
  if(t.id==="imp")$("#bkp").innerHTML='<textarea id="bk" rows="5" placeholder="Paste backup"></textarea><div class="tools"><button id="go">Restore now</button></div><div class="note" id="bm"></div>';
- if(t.id==="go"){try{const o=JSON.parse($("#bk").value);if(o&&typeof o.log==="object"&&o.open&&(o.v!==2||Array.isArray(o.subjects))){S=migrate(o);save();renderAll()}else $("#bm").textContent="That text is not an attendance backup."}catch(x){$("#bm").textContent="That text could not be read."}}
- if(t.id==="rst"){if(!t.dataset.arm){t.dataset.arm=1;t.textContent="Confirm?";setTimeout(()=>{t.dataset.arm="";t.textContent="Reset"},4000)}
-  else{const nm=S.name;S=D();S.name=nm;save();shown=null;shownW=0;renderAll()}}
+ if(t.id==="go"){try{const o=JSON.parse($("#bk").value);if(o&&typeof o.log==="object"&&o.open&&(o.v!==2||Array.isArray(o.subjects))){S=migrate(o);save();shown=null;shownW=0;renderAll();$("#bkp").innerHTML='<div class="note">Backup restored.</div>'}else $("#bm").textContent="That text is not an attendance backup."}catch(x){$("#bm").textContent="That text could not be read."}}
+ if(t.id==="rst"){if(!t.dataset.arm){t.dataset.arm=1;t.classList.add("armed");t.textContent="Confirm?";clearTimeout(t._t);t._t=setTimeout(()=>{t.dataset.arm="";t.classList.remove("armed");t.textContent="Reset"},4000)}
+  else{clearTimeout(t._t);t.dataset.arm="";t.classList.remove("armed");t.textContent="Reset";const nm=S.name;S=D();S.name=nm;save();shown=null;shownW=0;renderAll();$("#bkp").innerHTML='<div class="note">All data has been reset.</div>'}}
 });
 document.addEventListener("pointerdown",e=>{
  const g=e.target.closest(".grip");if(!g)return;
@@ -511,7 +557,7 @@ document.addEventListener("change",e=>{
  if(t.id==="uname"){S.name=t.value.trim().slice(0,30);save()}
  else if(t.id==="min"){S.min=Math.min(99,Math.max(1,+t.value||78));save();renderMost()}
  else if(t.id==="dt"){cur=t.value&&t.value<=today?t.value:today;enter=true;renderToday()}
- else if(t.dataset.o){(S.open[t.dataset.id]||(S.open[t.dataset.id]={h:0,a:0}))[t.dataset.o]=Math.max(0,+t.value||0);save();renderMost()}
+ else if(t.dataset.o){const id=t.dataset.id,k=t.dataset.o,o=S.open[id]||(S.open[id]={h:0,a:0});o[k]=Math.max(0,Math.round(+t.value||0)-logStats(id)[k]);save();renderMost()}
  else if(t.dataset.n){const s=S.subjects.find(x=>x.id===t.dataset.n),v=t.value.trim();if(v)s.name=v;else t.value=s.name;save();renderMost()}
 });
 document.addEventListener("keydown",e=>{if(e.key==="Escape")closeXP()});
@@ -520,7 +566,7 @@ document.addEventListener("visibilitychange",()=>{
 (function(){let seen=null;try{seen=localStorage.getItem("attendance_welcome_v1")}catch(e){}
  if(seen)return;const w=$("#wel"),b=$("#wbody");w.hidden=false;
  const close=()=>{try{localStorage.setItem("attendance_welcome_v1","1")}catch(e){}
-  w.classList.add("out");setTimeout(()=>{w.hidden=true},260);document.removeEventListener("keydown",onKey)};
+  w.classList.add("out");setTimeout(()=>{w.hidden=true;shown=null;shownW=0;enter=true;renderToday()},260);document.removeEventListener("keydown",onKey)};
  window._closeWel=close;
  let locked=false,tick=null;
  const onKey=e=>{if(e.key==="Escape"&&!locked)close()};
@@ -538,12 +584,12 @@ document.addEventListener("visibilitychange",()=>{
  const step1=()=>{b.innerHTML=`<h2 id="wt">Welcome</h2><p>What should we call you?</p>
   <input type="text" id="wn" maxlength="30" autocomplete="given-name" placeholder="Your name" aria-label="Your name">
   <button class="btn pri" id="wgo" style="margin-top:14px">Continue</button>
-  <button class="btn" id="wsk" style="margin-top:6px;border:0;background:none;color:var(--mute)">Skip</button>${FB.apiKey?`<div class="note" style="text-align:center;margin:14px 0 8px">Already use Bunkit on another device?</div><button class="btn gbtn" id="wg">${GIC}<span>Sign in with Google</span></button>`:""}`;
+  <button class="btn" id="wsk" style="margin-top:6px;border:0;background:none;color:var(--mute)">Skip</button>`;
   const go=()=>{S.name=$("#wn").value.trim().slice(0,30);save();renderSubj();step2()};
   $("#wgo").onclick=go;$("#wsk").onclick=step2;
   $("#wn").addEventListener("keydown",e=>{if(e.key==="Enter"){e.preventDefault();go()}});$("#wn").focus()};
  document.addEventListener("keydown",onKey);step1()})();
-renderAll();initCloud();
+renderAll();renderAccount();paintAvatar();initCloud();
 if("serviceWorker" in navigator)addEventListener("load",()=>{try{navigator.serviceWorker.register("sw.js").catch(()=>{})}catch(e){}});
 </script>
 </body>
