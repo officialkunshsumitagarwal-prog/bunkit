@@ -224,9 +224,10 @@ nav button.av.has[aria-selected=true]{background:transparent;box-shadow:0 0 0 2p
 <label class="hid" id="hl" aria-hidden="true"><input type="checkbox" switch id="hs" tabindex="-1"></label>
 <label class="hid" id="hl2" aria-hidden="true"><input type="checkbox" switch tabindex="-1"></label>
 <script>
-const OC='<svg class="oc" viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="8" fill="none" stroke="currentColor" stroke-width="3"/></svg>';
-const TK='<svg class="oc" viewBox="0 0 24 24" aria-hidden="true"><path fill="currentColor" d="M5.48 11.05Q6.11 11.05 6.44 12.08Q7.08 14.02 7.35 14.02Q7.56 14.02 7.79 13.69Q12.32 7.03 16.18 4.21Q17.81 3.02 19.35 3.02Q21.4 3.02 21.82 3.15Q22 3.19 22 3.55Q22 3.84 21.63 4.27Q11.26 16.18 9.27 19.76Q8.6 20.98 6.15 20.98Q5.34 20.98 4.45 20.56Q4.08 20.37 3.16 18.1Q2 15.23 2 13.06Q2 12.27 3.13 11.76Q4.68 11.05 5.45 11.05Q5.45 11.05 5.48 11.05Z"/></svg>';
-const KEY="attendance_tracker_v1",SYM={P:TK,A:"✘",C:OC},LBL={P:"Attended",A:"Bunked",C:"Cancelled"};
+/* One icon set for all marks: same stroke weight, round ends, colour = currentColor, so it looks identical on every device. */
+const ICON=d=>`<svg class="oc" viewBox="0 0 24 24" aria-hidden="true"><g fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round">${d}</g></svg>`;
+const TK=ICON('<path d="M4.8 12.8l4.8 4.8L19.2 7"/>'),XK=ICON('<path d="M6 6l12 12M18 6L6 18"/>'),OC=ICON('<circle cx="12" cy="12" r="7.5"/>');
+const KEY="attendance_tracker_v1",SYM={P:TK,A:XK,C:OC},LBL={P:"Attended",A:"Bunked",C:"Cancelled"};
 const $=s=>document.querySelector(s);
 const esc=s=>String(s).replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
 const RM=matchMedia("(prefers-reduced-motion:reduce)").matches;
@@ -410,7 +411,7 @@ function renderToday(){
  <div class="adv">${advice(c)}</div></div></aside>
  <div><div class="datebar"><b>${cur===today?"Today, ":""}${fmt(cur,{weekday:"long",day:"numeric",month:"long",year:"numeric"})}</b>
  <span><input type="date" id="dt" value="${cur}" max="${today}" aria-label="Date to mark">${cur!==today?` <button class="btn" id="td">Back to today</button>`:""}</span></div>
- <div class="lgrow"><div class="legend">${TK} Attended &nbsp; ✘ Bunked &nbsp; ${OC} Cancelled (not counted)</div>${S.subjects.length?`<button class="xbtn" id="xadd">＋ Extra lecture</button>`:""}</div>${list}</div></div>`;
+ <div class="lgrow"><div class="legend">${TK} Attended &nbsp; ${XK} Bunked &nbsp; ${OC} Cancelled (not counted)</div>${S.subjects.length?`<button class="xbtn" id="xadd">＋ Extra lecture</button>`:""}</div>${list}</div></div>`;
  if(c.p==null){shown=null;shownW=0;return}
  const to=c.p*100,from=shown==null?0:shown,el=$("#bigp"),f=$("#fill"),d=(shown==null&&!RM)?280:0;
  f.style.width=shownW+"%";
