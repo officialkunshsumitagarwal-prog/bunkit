@@ -225,7 +225,8 @@ nav button.av.has[aria-selected=true]{background:transparent;box-shadow:0 0 0 2p
 <label class="hid" id="hl2" aria-hidden="true"><input type="checkbox" switch tabindex="-1"></label>
 <script>
 const OC='<svg class="oc" viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="8" fill="none" stroke="currentColor" stroke-width="3"/></svg>';
-const KEY="attendance_tracker_v1",SYM={P:"✔",A:"✘",C:OC},LBL={P:"Attended",A:"Bunked",C:"Cancelled"};
+const TK='<svg class="oc" viewBox="0 0 24 24" aria-hidden="true"><path d="M4.5 12.8l5 5L19.5 7" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/></svg>';
+const KEY="attendance_tracker_v1",SYM={P:TK,A:"✘",C:OC},LBL={P:"Attended",A:"Bunked",C:"Cancelled"};
 const $=s=>document.querySelector(s);
 const esc=s=>String(s).replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
 const RM=matchMedia("(prefers-reduced-motion:reduce)").matches;
@@ -409,7 +410,7 @@ function renderToday(){
  <div class="adv">${advice(c)}</div></div></aside>
  <div><div class="datebar"><b>${cur===today?"Today, ":""}${fmt(cur,{weekday:"long",day:"numeric",month:"long",year:"numeric"})}</b>
  <span><input type="date" id="dt" value="${cur}" max="${today}" aria-label="Date to mark">${cur!==today?` <button class="btn" id="td">Back to today</button>`:""}</span></div>
- <div class="lgrow"><div class="legend">✔ Attended &nbsp; ✘ Bunked &nbsp; ${OC} Cancelled (not counted)</div>${S.subjects.length?`<button class="xbtn" id="xadd">＋ Extra lecture</button>`:""}</div>${list}</div></div>`;
+ <div class="lgrow"><div class="legend">${TK} Attended &nbsp; ✘ Bunked &nbsp; ${OC} Cancelled (not counted)</div>${S.subjects.length?`<button class="xbtn" id="xadd">＋ Extra lecture</button>`:""}</div>${list}</div></div>`;
  if(c.p==null){shown=null;shownW=0;return}
  const to=c.p*100,from=shown==null?0:shown,el=$("#bigp"),f=$("#fill"),d=(shown==null&&!RM)?280:0;
  f.style.width=shownW+"%";
