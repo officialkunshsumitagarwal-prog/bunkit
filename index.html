@@ -223,6 +223,35 @@ nav button.av.has[aria-selected=true]{background:transparent;box-shadow:0 0 0 2p
 .oc{display:inline-block;width:1em;height:1em;vertical-align:-.14em}
 .tools button.dng{color:var(--no)}
 .tools button.armed,.tools button.dng.armed,.mv button.armed,.mv button.del.armed{background:var(--no);border-color:var(--no);color:var(--on);font-weight:600}
+/* spacing polish */
+.card{padding:clamp(14px,4vw,18px)}
+.hero{padding:clamp(16px,4.5vw,22px)}
+.hh{gap:16px}
+.bar{margin-top:16px}
+.adv{margin-top:16px}
+.note{margin-top:12px}
+.datebar{margin:22px 0 10px;gap:10px 14px}
+.lgrow{margin-bottom:12px}
+.row{padding:14px;margin-bottom:10px;gap:10px 14px}
+.info{flex:1 1 150px}
+.st{display:flex;flex-wrap:wrap;gap:0 10px}
+.st span{white-space:nowrap}
+.srow{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr) auto;gap:10px 12px;align-items:end;padding:14px 0}
+.srow .top{grid-column:1/-1}
+.srow label{min-width:0}
+.mv{grid-column:3}
+footer{padding:28px 12px 8px}
+@media (min-width:720px){.srow{grid-template-columns:minmax(0,1fr) 120px 120px auto}.srow .top{grid-column:auto}.mv{grid-column:auto}}
+@media (min-width:900px){.tgrid{margin-top:16px}.tgrid .hero,.tgrid .datebar{margin-top:0}.hero .big{font-size:56px}}
+/* face: livelier bubble, toast, spin */
+.sr{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap}
+.facew{-webkit-touch-callout:none;-webkit-user-select:none;user-select:none}
+.bub{max-width:190px;font-size:13px;padding:9px 11px}
+.facew.spin{animation:fspin .9s cubic-bezier(.3,1.3,.5,1)}
+@keyframes fspin{to{transform:rotate(360deg)}}
+.toast{position:fixed;left:50%;bottom:calc(88px + env(safe-area-inset-bottom));transform:translate(-50%,12px);max-width:min(92vw,420px);padding:10px 14px;border-radius:14px;background:var(--ink);color:var(--bg);font-size:13px;font-weight:600;text-align:center;opacity:0;pointer-events:none;transition:opacity .25s,transform .25s;z-index:30}
+.toast.show{opacity:1;transform:translate(-50%,0)}
+@media (min-width:720px){.toast{bottom:28px}}
 @media (prefers-reduced-motion:reduce){*,*::before,*::after{animation:none!important;transition:none!important}}
 </style>
 </head>
@@ -241,6 +270,8 @@ nav button.av.has[aria-selected=true]{background:transparent;box-shadow:0 0 0 2p
 <section id="subj" class="view narrow" hidden></section>
 <section id="account" class="view narrow" hidden></section>
 </main>
+<div id="fsay" class="sr" role="status" aria-live="polite"></div>
+<div id="ftoast" class="toast" aria-hidden="true"></div>
 <footer>Created by Kunsh S Agarwal
 <a class="soc li" href="https://www.linkedin.com/in/kunshsumitagarwal" target="_blank" rel="noopener noreferrer" aria-label="LinkedIn"><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="2" y="2" width="20" height="20" rx="3.5" fill="currentColor"/><g fill="var(--bg)"><rect x="6" y="9.6" width="2.5" height="8"/><circle cx="7.25" cy="6.8" r="1.5"/><path d="M10.8 9.6h2.4v1.1c.4-.7 1.3-1.3 2.6-1.3 2.3 0 2.8 1.5 2.8 3.4v4.8h-2.5v-4.2c0-1-.1-1.9-1.3-1.9s-1.5.9-1.5 1.9v4.2h-2.5z"/></g></svg></a>
 <a class="soc ig" href="https://www.instagram.com/kunshsumitagarwal/" target="_blank" rel="noopener noreferrer" aria-label="Instagram"><svg viewBox="0 0 24 24" aria-hidden="true"><rect class="gs" x="3" y="3" width="18" height="18" rx="5.2" fill="none" stroke="currentColor" stroke-width="1.9"/><circle class="gs" cx="12" cy="12" r="4.1" fill="none" stroke="currentColor" stroke-width="1.9"/><circle class="gf" cx="17.3" cy="6.7" r="1.15" fill="currentColor"/></svg></a>
@@ -407,8 +438,8 @@ function advice(c){
 
 function setMark(d,id,v,k=0){
  const arr=getArr(d,id);while(arr.length<=k)arr.push("");
- if(arr[k]===v)arr[k]="";else{arr[k]=v;lastPop={id,v,k}}
- putArr(d,id,arr);save();renderMost()}
+ let kind=v;if(arr[k]===v){arr[k]="";kind="U"}else{arr[k]=v;lastPop={id,v,k}}
+ putArr(d,id,arr);save();renderMost();faceReact(kind,id)}
 function openXP(){
  if(!S.subjects.length)return;
  if(S.subjects.length===1)return addSlot(S.subjects[0].id);
@@ -433,14 +464,24 @@ const FM={
  crying:{ct:-5,cb:4,mw:11,eo:.55,bw:1.4,bh:1,bl:0,tr:1,sw:0,c:"no",t:"Crying inside"}};
 const FRANK={crying:0,verysad:1,sad:2,nervous:3,idle:3.5,content:4,happy:5,ecstatic:6};
 const MSG={
- idle:["Mark a lecture and I’ll wake up!","Add your subjects to begin."],
- ecstatic:["Wow, look at those numbers!","You’re absolutely crushing it!"],
- happy:["Doing great. Keep it up!","Safe and sound."],
- content:["All good. Stay steady.","Nice and comfortable."],
- nervous:["Careful… no bunking now!","We’re right on the edge."],
- sad:["Attend the next {n}?","I’m a little worried…"],
- verysad:["I’m feeling low. {n} would help.","Please don’t skip."],
- crying:["Please come to class… {n} to go.","I need {n} to recover."]};
+ idle:["Hi {name}! Mark a lecture and I’ll wake up.","Zzz… add your subjects to get me going.","I’m ready when you are, {name}!","Blank slate. Let’s make it a good semester."],
+ ecstatic:["{name}, you absolute legend! {pct}!","Look at that {pct}. Frame it!","You could bunk {skip} and still sleep like a baby.","I’m doing cartwheels in here!","Top of the class energy, {name}.","Teachers love you. The canteen loves you more."],
+ happy:["Doing great, {name}. Keep it up!","{pct} and comfortable. Nice.","You’ve got room for {skip}. No rush to use it.","Safe and sound, just how I like it.","A well-earned breather is allowed. Just not too many."],
+ content:["All good, {name}. Stay steady.","{pct}. Comfortable, not careless.","One bunk in the bank. Spend it wisely.","Smooth sailing. Don’t rock the boat.","One bunk to spare. Choose wisely, {name}."],
+ nervous:["Careful, {name}… no bunking now!","We’re right on the edge. Hold my hand.","Zero bunks left. Attend and I’ll relax.","My palms are sweaty. Is that even possible for a face?","One slip and I’m done for."],
+ sad:["Attend the next {n}, {name}?","I’m a little worried about {worst}.","{worst} needs some love. {n} to go.","We can fix this together. {n} and we’re back.","Small steps, {name}. Start with one lecture."],
+ verysad:["I’m feeling low. {n} would help.","{worst} is dragging us down. Please go?","Not too late, {name}. {n} and we recover.","I believe in you. Just turn up.","A little rough, but you can do this."],
+ crying:["Please come to class… {n} to go.","I need {n} to recover. I believe in you, {name}.","{worst} is really hurting us. Let’s fix it.","Don’t give up. Every lecture counts now.","*sniff* One lecture at a time, {name}."]};
+const REACT={
+ P:["Yes! +1 for {subj}.","That’s the spirit, {name}!","Present and proud!","Attendance +1. I felt that.","Look at you, showing up!","{subj} sends its thanks."],
+ A:["Bunked {subj}. Enjoy the break!","Ooh, living dangerously.","Okay, but I’m keeping count.","Fun now, regrets later?","Hope it was worth it, {name}.","Shhh. I didn’t see anything."],
+ AN:["Careful, that was the last safe bunk!","Zero bunks left now. No more, {name}!","Right on the edge. Please no more."],
+ AW:["That one stings. {n} to recover.","Uh-oh. Thin ice now, {name}.","We really needed that lecture…","Okay, now I’m worried."],
+ C:["Cancelled? Free time!","Not counted. Nobody wins, nobody loses.","A surprise break. Use it well!","No lecture, no problem.","Free period! Hydrate, {name}."],
+ U:["Undone. Nothing to see here.","Erased from history.","Changed your mind? Happens."],
+ RU:["Raising the bar to {min}%? Brave, {name}!","{min}% it is. Ambitious!"],
+ RD:["Lowering the bar to {min}%? Fair enough.","{min}% required. Easier life, {name}."]};
+const TIPS=["Tip: check Forecast before you bunk. Future you says thanks.","Tip: mark lectures right after class, while you still remember.","Breaks are healthy. Burnout isn’t. Balance, {name}.","Tip: drag subjects in the Subjects tab to reorder them.","Tip: tap a Register cell to fix a mistake.","You’re doing better than you think, {name}.","Fun fact: I blink more when you’re not looking."];
 const FACE_HTML=`<button class="facew" id="face" type="button"><svg class="face" viewBox="0 0 100 100" aria-hidden="true"><g class="fg">
  <circle id="f-bg" cx="50" cy="50" r="44" stroke-width="4"/>
  <ellipse id="f-cl" cx="22" cy="58" rx="7.5" ry="4.5" fill="#ff8fa3" opacity="0"/><ellipse id="f-cr" cx="78" cy="58" rx="7.5" ry="4.5" fill="#ff8fa3" opacity="0"/>
@@ -449,7 +490,7 @@ const FACE_HTML=`<button class="facew" id="face" type="button"><svg class="face"
  <g id="f-tr" opacity="0"><g transform="translate(31 52)"><path class="tear" d="M0 0C3 4 5 7.5 0 11C-5 7.5-3 4 0 0Z"/></g><g transform="translate(69 52)"><path class="tear t2" d="M0 0C3 4 5 7.5 0 11C-5 7.5-3 4 0 0Z"/></g></g>
  <g id="f-sw" opacity="0"><g transform="translate(83 27)"><path class="sweat" d="M0 0C3 4 5 7.5 0 11C-5 7.5-3 4 0 0Z"/></g></g>
 </g></svg><span class="bub" aria-hidden="true"></span></button>`;
-const FA={P:null,T:null,mood:null,c:null,r:null,raf:0,n:0,lx:0,ly:0,tx:0,ty:0,bubT:0,lookT:0};
+const FA={P:null,T:null,mood:null,c:null,r:null,raf:0,n:0,lx:0,ly:0,tx:0,ty:0,bubT:0,lookT:0,bag:{},last:Date.now(),taps:[],held:false,greeted:false,lastTxt:"",tT:0};
 function moodOf(t,c){
  if(!t.h||c.p==null)return"idle";
  const d=c.p*100-S.min;
@@ -489,15 +530,54 @@ function faceMount(t,c){
  FA.r={root,bg:q("#f-bg"),el:q("#f-el"),er:q("#f-er"),eyes:q("#f-eyes"),bl:q("#f-bwl"),br:q("#f-bwr"),m:q("#f-m"),cl:q("#f-cl"),cr:q("#f-cr"),tr:q("#f-tr"),sw:q("#f-sw"),bub:q(".bub")};
  root.dataset.m=mood;root.setAttribute("aria-label","Bunkit mood: "+FM[mood].t+". Tap to hear what it says.");
  const mt=$("#moodtxt");if(mt){mt.textContent=FM[mood].t;mt.dataset.c=FM[mood].c}
- root.addEventListener("animationend",e=>{if(e.target===root)root.classList.remove("hop","wob")});
+ root.addEventListener("animationend",e=>{if(e.target===root)root.classList.remove("hop","wob","spin")});
  if(FA.mood&&FA.mood!==mood&&!RM)root.classList.add(FRANK[mood]>FRANK[FA.mood]?"hop":"wob");
- FA.mood=mood;FA.c=c;fpaint();fkick()}
+ FA.mood=mood;FA.c=c;fpaint();fkick();
+ if(!FA.greeted){const w=$("#wel");if(!(w&&!w.hidden)){FA.greeted=true;setTimeout(()=>speak(ffill(greet(),fcx())),1100)}}}
+function fcx(){const c=FA.c||{};let w=null,b=null;
+ S.subjects.forEach(x=>{const k=stats(x.id);if(!k.h)return;const p=k.a/k.h;if(!w||p<w.p)w={p,n:x.name};if(!b||p>b.p)b={p,n:x.name}});
+ return{name:(S.name||"").trim()||"friend",n:pl(c.need||1,"lecture"),skip:pl(c.skip||0,"lecture"),pct:pc(c.p),worst:w?w.n:"one of your subjects",best:b?b.n:"your best subject",min:S.min}}
+const ffill=(t,x)=>t.replace(/\{(\w+)\}/g,(m,k)=>x[k]!=null?x[k]:m);
+function pick(key,arr){let b=FA.bag[key];
+ if(!b||!b.length){b=arr.slice();for(let i=b.length-1;i>0;i--){const j=Math.random()*(i+1)|0;[b[i],b[j]]=[b[j],b[i]]}
+  if(b.length>1&&b[b.length-1]===FA.lastTxt)b.unshift(b.pop());FA.bag[key]=b}
+ return FA.lastTxt=b.pop()}
+function speak(txt){const r=FA.r;if(!r||!r.root.isConnected||!r.root.offsetParent)return;
+ const bb=r.root.getBoundingClientRect(),vis=bb.bottom>72&&bb.top<innerHeight-84,ms=Math.min(7000,2400+txt.length*55);
+ const live=$("#fsay");if(live)live.textContent=txt;FA.last=Date.now();
+ if(vis){r.bub.textContent=txt;r.bub.classList.add("show");clearTimeout(FA.bubT);FA.bubT=setTimeout(()=>r.bub.classList.remove("show"),ms)}
+ else{const t=$("#ftoast");if(t){t.textContent=txt;t.classList.add("show");clearTimeout(FA.tT);FA.tT=setTimeout(()=>t.classList.remove("show"),ms)}}}
+function fanim(c){const R=FA.r&&FA.r.root;if(!R||RM)return;R.classList.remove("hop","wob","spin");void R.offsetWidth;R.classList.add(c)}
+function fglance(x,y){FA.tx=x;FA.ty=y;fkick();clearTimeout(FA.lookT);FA.lookT=setTimeout(()=>{FA.tx=FA.ty=0;fkick()},1400)}
 function faceTap(){
  const r=FA.r;if(!r||!r.root.isConnected||!FA.mood)return;
- const arr=MSG[FA.mood],txt=arr[FA.n++%arr.length].replace("{n}",pl(FA.c.need||1,"lecture"));
- r.bub.textContent=txt;r.bub.classList.add("show");clearTimeout(FA.bubT);FA.bubT=setTimeout(()=>r.bub.classList.remove("show"),3000);
- r.root.classList.remove("hop","wob");if(!RM){void r.root.offsetWidth;r.root.classList.add("hop")}
+ const now=Date.now();FA.taps=FA.taps.filter(t=>now-t<2500);FA.taps.push(now);
+ let txt,an="hop";const n=FA.taps.length;
+ if(n>=6){txt=pick("dz",["Okay okay, I’m dizzy! Stop spinning me!","Whee… the room is spinning.","Poke me once more and I’m telling the professor."]);FA.taps=[];an="spin"}
+ else if(n>=4){txt=pick("an2",["Seriously, {name}, stop poking me!","I said don’t touch me a lot!","My face is not a button… okay, it is. But still!","One more poke and I’m filing a complaint."]);an="wob"}
+ else if(n===3){txt=pick("an1",["Hey! Please don’t touch me so much.","Easy, {name}. Don’t touch me a lot!","Personal space, please. Too many pokes!"]);an="wob"}
+ else txt=pick(FA.mood,MSG[FA.mood]);
+ speak(ffill(txt,fcx()));fanim(an);FA.P.bk=1;fkick()}
+function faceTip(){speak(ffill(pick("tip",TIPS),fcx()));fanim("hop");FA.P.bk=1;fkick()}
+function faceReact(kind,id){
+ const r=FA.r;if(!r||!r.root.isConnected||!FA.mood)return;
+ const m=FA.mood,x=fcx(),sb=id?S.subjects.find(q=>q.id===id):null;x.subj=sb?sb.name:"that one";
+ let key=kind;
+ if(kind==="A"){if(m==="sad"||m==="verysad"||m==="crying")key="AW";else if(m==="nervous")key="AN"}
+ if(!REACT[key])return;
+ speak(ffill(pick(key,REACT[key]),x));
+ if(kind==="P")fanim("hop");else if(kind==="A"){fanim("wob");fglance(-2.6,1.2)}else if(kind==="C")fglance(0,-2.2);
  FA.P.bk=1;fkick()}
+function greet(){const h=new Date().getHours();
+ return h<5?"Burning the midnight oil, {name}? Log your lectures and get some rest.":h<12?"Good morning, {name}! Ready for today?":h<17?"Good afternoon, {name}! How’s the day going?":h<21?"Good evening, {name}! Time to log today’s lectures.":"Late night, {name}? Log your lectures and rest."}
+let _lp=0;
+document.addEventListener("pointerdown",e=>{if(!e.target.closest("#face"))return;FA.held=false;clearTimeout(_lp);_lp=setTimeout(()=>{FA.held=true;buzz("P");faceTip()},650)},{passive:true});
+["pointerup","pointercancel"].forEach(ev=>document.addEventListener(ev,()=>clearTimeout(_lp),true));
+(function nudge(){setTimeout(()=>{const r=FA.r;
+ if(r&&FA.mood&&r.root.isConnected&&r.root.offsetParent&&!document.hidden&&Date.now()-FA.last>25000){
+  const none=!S.log[today]||!Object.keys(S.log[today]).length;
+  speak(ffill(none&&S.subjects.length?pick("nd",["Psst, {name}. Have you marked today’s lectures?","Don’t forget to log today, {name}!","Today’s lectures aren’t marked yet…"]):pick(FA.mood,MSG[FA.mood]),fcx()))}
+ nudge()},40000+Math.random()*30000)})();
 (function blink(){setTimeout(()=>{if(!RM&&FA.r&&FA.P&&FA.r.root.isConnected&&FA.r.root.offsetParent){FA.P.bk=1;fkick()}blink()},2600+Math.random()*3400)})();
 addEventListener("pointermove",e=>{
  const r=FA.r;if(RM||!r||!r.root.isConnected||!r.root.offsetParent)return;
@@ -513,7 +593,7 @@ function renderToday(){
   const ex=k.p==null?"":k.ok?(k.skip>0?`<span class="ok">can bunk ${k.skip}</span>`:""):`<span class="no">attend ${k.need} more</span>`;
   const bt=(q,cv)=>["P","A","C"].map(x=>`<button class="b ${cv===x?"sel "+x:""}${lastPop&&lastPop.id===sb.id&&lastPop.v===x&&lastPop.k===q?" pop":""}" data-id="${sb.id}" data-v="${x}" data-k="${q}" aria-pressed="${cv===x}" aria-label="${esc(sb.name)}${q?", lecture "+(q+1):""}: ${LBL[x]}">${SYM[x]}</button>`).join("");
   let xs="";for(let q=1;q<n;q++)xs+=`<div class="xs${nsl&&nsl.id===sb.id&&nsl.k===q?" new":""}"><span class="xl">Lecture ${q+1}</span><div class="btns">${bt(q,arr[q])}</div><button class="xr" data-xr="${sb.id}:${q}" aria-label="Remove lecture ${q+1} of ${esc(sb.name)}">×</button></div>`;
-  list+=`<div class="row" style="--i:${i+1}"><div class="info"><div class="nm">${esc(sb.name)}${n>1?`<span class="tag">${n} today</span>`:""}</div><div class="st">${s.a}/${s.h} · ${pc(k.p)}${ex?" · "+ex:""}</div></div>
+  list+=`<div class="row" style="--i:${i+1}"><div class="info"><div class="nm">${esc(sb.name)}${n>1?`<span class="tag">${n} today</span>`:""}</div><div class="st"><span>${s.a}/${s.h} · ${pc(k.p)}</span>${ex}</div></div>
   <div class="btns">${bt(0,arr[0])}</div>${xs}</div>`});
  lastPop=null;
  $("#tmain").innerHTML=`<div class="tgrid ${en?"enter":""}"><aside><div class="hero"><div class="hh"><div class="hl"><div class="sub">Overall attendance</div><div class="big ${c.p==null?"":c.ok?"ok":"no"}" id="bigp">${pc(c.p)}</div>
@@ -578,7 +658,7 @@ function animFore(){const v=$("#fore"),bs=v.querySelectorAll(".bar i");if(!bs.le
  bs.forEach(i=>{i.style.transition="none";i.style.width="0%"});void v.offsetWidth;
  bs.forEach(i=>{i.style.transition=""});setTimeout(paintPlan,200)}
 
-function abbr(n){const w=n.trim().split(/\s+/);return w.length>1?w.map(x=>x[0]).join("").toUpperCase().slice(0,4):n.slice(0,5)}
+function abbr(n){const w=n.trim().split(/\s+/);return w.length>1?w.map(x=>x[0]).join("").toUpperCase().slice(0,4):n.slice(0,4)}
 function renderReg(){
  const ds=Object.keys(S.log).sort().reverse();let h=``;
  if(!ds.length||!S.subjects.length)h+=`<div class="card empty">No records yet.</div>`;
@@ -588,7 +668,7 @@ function renderReg(){
  $("#reg").innerHTML=h}
 
 function renderSubj(){
- let h=`<div class="card fin"><label>Your name<input type="text" id="uname" maxlength="30" autocomplete="given-name" value="${esc(S.name||"")}"></label></div><div class="card">${S.subjects.length?`<div class="note" style="margin:0 0 4px">Held and attended update automatically as you mark lectures. You can also edit them to correct a total.</div>`:""}`;
+ let h=`<div class="card">${S.subjects.length?`<div class="note" style="margin:0 0 4px">Held and attended update automatically as you mark lectures. You can also edit them to correct a total.</div>`:""}`;
  S.subjects.forEach(s=>{const o=stats(s.id);
   h+=`<div class="srow" data-row="${s.id}"><div class="top"><span class="grip" title="Hold and drag" aria-label="Hold and drag to reorder">⠿</span><input class="nmi" data-n="${s.id}" value="${esc(s.name)}" maxlength="40" aria-label="Subject name" autocomplete="off"></div>
   <label>Classes held<input type="number" inputmode="numeric" min="0" data-o="h" data-id="${s.id}" value="${o.h}"></label>
@@ -598,17 +678,18 @@ function renderSubj(){
  <div class="tools"><button class="btn pri" id="addb">Add</button></div></div>`;
  $("#subj").innerHTML=h}
 
+function renderName(){const el=$("#namecard");if(el)el.innerHTML=`<label>Your name<input type="text" id="uname" maxlength="30" autocomplete="given-name" value="${esc(S.name||"")}"></label>`}
 function renderAccount(){
- $("#account").innerHTML=(FB.apiKey?'<div class="card" id="acct"></div>':"")+`<div class="card"><b>Backup and restore</b>
+ $("#account").innerHTML='<div class="card fin" id="namecard"></div>'+(FB.apiKey?'<div class="card" id="acct"></div>':"")+`<div class="card"><b>Backup and restore</b>
  <div class="note" style="margin:4px 0 0">Backup gives you text you can keep. Restore loads it back.</div>
  <div class="tools"><button id="exp">Backup</button><button id="imp">Restore</button></div><div id="bkp"></div></div>
  <div class="card"><b>Reset</b>
  <div class="note" style="margin:4px 0 0">Erases all your subjects and attendance${FB.apiKey?", including the synced copy if you’re signed in":""}. Your name is kept.</div>
  <div class="tools"><button class="dng" id="rst">Reset</button></div></div>
  <div class="note">${FB.apiKey?"Without signing in, your data is saved on this device only.":"Your data is saved on this device only."}</div>`;
- renderAcct()}
+ renderName();renderAcct()}
 const renderMost=()=>{renderToday();renderFore();renderReg();paintCounts()};
-const renderAll=()=>{renderMost();renderSubj()};
+const renderAll=()=>{renderMost();renderSubj();renderName()};
 
 function show(t){
  document.querySelectorAll("nav button").forEach(b=>b.setAttribute("aria-selected",b.dataset.t===t));
@@ -618,7 +699,7 @@ function show(t){
 document.addEventListener("click",e=>{
  if(e.target.id==="xo")return closeXP();
  const t=e.target.closest("button,td.cell");if(!t)return;
- if(t.id==="face"){buzz("C");return faceTap()}
+ if(t.id==="face"){if(FA.held){FA.held=false;return}buzz("C");return faceTap()}
  if(t.id==="xadd"){buzz("C");return openXP()}
  if(t.id==="xcancel"){return closeXP()}
  if(t.dataset.xs){buzz("P");return addSlot(t.dataset.xs)}
@@ -671,7 +752,7 @@ document.addEventListener("pointerdown",e=>{
 document.addEventListener("change",e=>{
  const t=e.target;
  if(t.id==="uname"){S.name=t.value.trim().slice(0,30);save()}
- else if(t.id==="min"){S.min=Math.min(99,Math.max(1,+t.value||78));save();renderMost()}
+ else if(t.id==="min"){const o=S.min;S.min=Math.min(99,Math.max(1,+t.value||78));save();renderMost();if(S.min!==o)faceReact(S.min>o?"RU":"RD")}
  else if(t.id==="dt"){cur=t.value&&t.value<=today?t.value:today;enter=true;renderToday()}
  else if(t.dataset.o){const id=t.dataset.id,k=t.dataset.o,o=S.open[id]||(S.open[id]={h:0,a:0});o[k]=Math.max(0,Math.round(+t.value||0)-logStats(id)[k]);save();renderMost()}
  else if(t.dataset.n){const s=S.subjects.find(x=>x.id===t.dataset.n),v=t.value.trim();if(v)s.name=v;else t.value=s.name;save();renderMost()}
@@ -701,7 +782,7 @@ document.addEventListener("visibilitychange",()=>{
   <input type="text" id="wn" maxlength="30" autocomplete="given-name" placeholder="Your name" aria-label="Your name">
   <button class="btn pri" id="wgo" style="margin-top:14px">Continue</button>
   <button class="btn" id="wsk" style="margin-top:6px;border:0;background:none;color:var(--mute)">Skip</button>`;
-  const go=()=>{S.name=$("#wn").value.trim().slice(0,30);save();renderSubj();step2()};
+  const go=()=>{S.name=$("#wn").value.trim().slice(0,30);save();renderName();step2()};
   $("#wgo").onclick=go;$("#wsk").onclick=step2;
   $("#wn").addEventListener("keydown",e=>{if(e.key==="Enter"){e.preventDefault();go()}});$("#wn").focus()};
  document.addEventListener("keydown",onKey);step1()})();
