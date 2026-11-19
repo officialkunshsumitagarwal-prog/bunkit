@@ -173,6 +173,34 @@ footer .ig:active .gf,footer .ig:focus-visible .gf{fill:url(#igg)}
 .sb:active{transform:scale(.88)}.sb:disabled{opacity:.35;cursor:default;transform:none}
 .stp output{min-width:30px;text-align:center;font-weight:700;font-size:17px;font-variant-numeric:tabular-nums}
 .plf{display:flex;align-items:center;gap:8px;margin-top:12px;flex-wrap:wrap}.plf .note{margin:0}.pill[hidden]{display:none}
+.hh{display:flex;justify-content:space-between;align-items:flex-start;gap:10px}
+.hl{min-width:0}
+.hr{display:flex;flex-direction:column;align-items:flex-end;gap:6px;flex:none}
+.hr .tgt{float:none}
+.moodtxt{margin-top:3px;font-size:13px;font-weight:600;color:var(--mute);min-height:1.2em;transition:color .5s}
+.moodtxt[data-c=ok]{color:var(--ok)}.moodtxt[data-c=no]{color:var(--no)}.moodtxt[data-c=na]{color:var(--na)}
+.facew{position:relative;width:clamp(56px,17vw,70px);height:clamp(56px,17vw,70px);padding:0;border:0;border-radius:50%;background:transparent;cursor:pointer;font-family:inherit;touch-action:manipulation;-webkit-tap-highlight-color:transparent}
+.face{display:block;width:100%;height:100%;overflow:visible}
+.fe{fill:var(--ink)}
+.fs{fill:none;stroke:var(--ink);stroke-width:3.4;stroke-linecap:round;stroke-linejoin:round}
+.fm{fill:#3a1218;stroke:var(--ink);stroke-width:3.4;stroke-linecap:round;stroke-linejoin:round}
+.fg{animation:fbob 3.4s ease-in-out infinite}
+.facew[data-m=crying] .fg{animation:fsob .7s ease-in-out infinite}
+.facew[data-m=nervous] .fg{animation:ftrem .26s linear infinite}
+@keyframes fbob{50%{transform:translateY(-2px)}}
+@keyframes fsob{50%{transform:translateY(2.5px)}}
+@keyframes ftrem{25%{transform:translateX(-1px)}75%{transform:translateX(1px)}}
+.facew.hop{animation:fhop .55s cubic-bezier(.3,1.6,.5,1)}
+.facew.wob{animation:fwob .55s ease-in-out}
+@keyframes fhop{40%{transform:scale(1.18) rotate(-6deg)}}
+@keyframes fwob{20%{transform:rotate(-9deg)}40%{transform:rotate(8deg)}60%{transform:rotate(-5deg)}80%{transform:rotate(2deg)}}
+.tear{fill:#5ec8ff;animation:tfall 1.3s ease-in infinite}.tear.t2{animation-delay:.65s}
+@keyframes tfall{0%{transform:translateY(-2px) scale(.6);opacity:0}15%{opacity:1;transform:translateY(0) scale(1)}100%{transform:translateY(22px);opacity:0}}
+.sweat{fill:#7fd3ff;animation:swt 2s ease-in-out infinite}
+@keyframes swt{50%{transform:translateY(3px)}}
+.bub{position:absolute;right:calc(100% + 8px);top:50%;transform:translateY(-50%) scale(.85);transform-origin:right center;width:max-content;max-width:150px;padding:8px 10px;border-radius:12px;background:var(--ink);color:var(--bg);font-size:12px;font-weight:600;line-height:1.3;text-align:left;opacity:0;pointer-events:none;transition:opacity .25s,transform .25s;z-index:5}
+.bub::after{content:"";position:absolute;left:100%;top:50%;margin-top:-5px;border:5px solid transparent;border-left-color:var(--ink)}
+.bub.show{opacity:1;transform:translateY(-50%) scale(1)}
 .leg{font-size:13px;color:var(--mute);margin-top:10px;line-height:1.7}
 @media (min-width:720px){
  body{padding-bottom:40px}
@@ -393,6 +421,90 @@ function closeXP(){const o=$("#xo");if(o.hidden)return;o.classList.add("out");se
 function addSlot(id){const arr=getArr(cur,id);if(!arr.length)arr.push("");if(arr.length>=8){closeXP();return}
  arr.push("");putArr(cur,id,arr);newSlot={id,k:arr.length-1};save();closeXP();renderMost()}
 
+/* ===== Mood face (Today tab): reacts to your overall attendance in real time ===== */
+const FM={
+ idle:{ct:1.5,cb:1.5,mw:13,eo:.8,bw:0,bh:0,bl:0,tr:0,sw:0,c:"mute",t:"Waiting for your first lecture"},
+ ecstatic:{ct:1,cb:14,mw:17,eo:1.15,bw:-.4,bh:-3,bl:1,tr:0,sw:0,c:"ok",t:"Over the moon"},
+ happy:{ct:7,cb:7,mw:16,eo:1,bw:-.2,bh:-2,bl:.7,tr:0,sw:0,c:"ok",t:"Feeling great"},
+ content:{ct:4,cb:4,mw:14,eo:1,bw:0,bh:0,bl:.2,tr:0,sw:0,c:"ok",t:"Doing fine"},
+ nervous:{ct:-.5,cb:-.5,mw:11,eo:1.1,bw:.7,bh:-1,bl:0,tr:0,sw:1,c:"na",t:"Right on the edge"},
+ sad:{ct:-4.5,cb:-4.5,mw:13,eo:.95,bw:1,bh:0,bl:0,tr:0,sw:0,c:"no",t:"A little worried"},
+ verysad:{ct:-7,cb:-5.5,mw:13,eo:.8,bw:1.2,bh:1,bl:0,tr:.45,sw:0,c:"no",t:"Feeling low"},
+ crying:{ct:-5,cb:4,mw:11,eo:.55,bw:1.4,bh:1,bl:0,tr:1,sw:0,c:"no",t:"Crying inside"}};
+const FRANK={crying:0,verysad:1,sad:2,nervous:3,idle:3.5,content:4,happy:5,ecstatic:6};
+const MSG={
+ idle:["Mark a lecture and I’ll wake up!","Add your subjects to begin."],
+ ecstatic:["Wow, look at those numbers!","You’re absolutely crushing it!"],
+ happy:["Doing great. Keep it up!","Safe and sound."],
+ content:["All good. Stay steady.","Nice and comfortable."],
+ nervous:["Careful… no bunking now!","We’re right on the edge."],
+ sad:["Attend the next {n}?","I’m a little worried…"],
+ verysad:["I’m feeling low. {n} would help.","Please don’t skip."],
+ crying:["Please come to class… {n} to go.","I need {n} to recover."]};
+const FACE_HTML=`<button class="facew" id="face" type="button"><svg class="face" viewBox="0 0 100 100" aria-hidden="true"><g class="fg">
+ <circle id="f-bg" cx="50" cy="50" r="44" stroke-width="4"/>
+ <ellipse id="f-cl" cx="22" cy="58" rx="7.5" ry="4.5" fill="#ff8fa3" opacity="0"/><ellipse id="f-cr" cx="78" cy="58" rx="7.5" ry="4.5" fill="#ff8fa3" opacity="0"/>
+ <g id="f-eyes"><ellipse id="f-el" class="fe" cx="35" cy="44" rx="5.2" ry="5.5"/><ellipse id="f-er" class="fe" cx="65" cy="44" rx="5.2" ry="5.5"/></g>
+ <path id="f-bwl" class="fs"/><path id="f-bwr" class="fs"/><path id="f-m" class="fm"/>
+ <g id="f-tr" opacity="0"><g transform="translate(31 52)"><path class="tear" d="M0 0C3 4 5 7.5 0 11C-5 7.5-3 4 0 0Z"/></g><g transform="translate(69 52)"><path class="tear t2" d="M0 0C3 4 5 7.5 0 11C-5 7.5-3 4 0 0Z"/></g></g>
+ <g id="f-sw" opacity="0"><g transform="translate(83 27)"><path class="sweat" d="M0 0C3 4 5 7.5 0 11C-5 7.5-3 4 0 0Z"/></g></g>
+</g></svg><span class="bub" aria-hidden="true"></span></button>`;
+const FA={P:null,T:null,mood:null,c:null,r:null,raf:0,n:0,lx:0,ly:0,tx:0,ty:0,bubT:0,lookT:0};
+function moodOf(t,c){
+ if(!t.h||c.p==null)return"idle";
+ const d=c.p*100-S.min;
+ if(c.ok)return c.skip>=2?(d>=12?"ecstatic":"happy"):c.skip===1?"content":"nervous";
+ return d>-5?"sad":d>-12?"verysad":"crying"}
+function frgb(n){const v=getComputedStyle(document.documentElement).getPropertyValue(n).trim();let m=v.match(/^#([0-9a-f]{3}|[0-9a-f]{6})$/i);
+ if(m){let h=m[1];if(h.length===3)h=[...h].map(x=>x+x).join("");return[0,2,4].map(i=>parseInt(h.slice(i,i+2),16))}
+ m=v.match(/(\d+)[ ,]+(\d+)[ ,]+(\d+)/);return m?[+m[1],+m[2],+m[3]]:[128,128,128]}
+function ftarget(k){const m=FM[k],f=frgb(m.c==="mute"?"--bg":"--"+m.c+"bg"),s=frgb(m.c==="mute"?"--mute":"--"+m.c);
+ return{ct:m.ct,cb:m.cb,mw:m.mw,eo:m.eo,bw:m.bw,bh:m.bh,bl:m.bl,tr:m.tr,sw:m.sw,fr:f[0],fg:f[1],fb:f[2],sr:s[0],sg:s[1],sb:s[2]}}
+function fpaint(){
+ const r=FA.r,P=FA.P;if(!r||!P)return;
+ r.bg.setAttribute("fill",`rgb(${P.fr|0},${P.fg|0},${P.fb|0})`);r.bg.setAttribute("stroke",`rgb(${P.sr|0},${P.sg|0},${P.sb|0})`);
+ const ry=(5.5*P.eo*(1-.92*(P.bk||0))).toFixed(2);
+ r.eyes.setAttribute("transform",`translate(${FA.lx.toFixed(2)} ${FA.ly.toFixed(2)})`);r.el.setAttribute("ry",ry);r.er.setAttribute("ry",ry);
+ const yo=(31+3*P.bw+P.bh).toFixed(2),yi=(31-5*P.bw+P.bh).toFixed(2);
+ r.bl.setAttribute("d",`M24 ${yo}L43 ${yi}`);r.br.setAttribute("d",`M76 ${yo}L57 ${yi}`);
+ const x1=50-P.mw,x2=50+P.mw;
+ r.m.setAttribute("d",`M${x1.toFixed(2)} 67Q50 ${(67+2*P.ct).toFixed(2)} ${x2.toFixed(2)} 67Q50 ${(67+2*P.cb).toFixed(2)} ${x1.toFixed(2)} 67Z`);
+ r.m.setAttribute("fill-opacity",Math.max(0,Math.min(1,(P.cb-P.ct)/6)).toFixed(2));
+ const bl=Math.max(0,P.bl).toFixed(2);r.cl.setAttribute("opacity",bl);r.cr.setAttribute("opacity",bl);
+ r.tr.setAttribute("opacity",Math.max(0,Math.min(1,P.tr)).toFixed(2));r.sw.setAttribute("opacity",Math.max(0,Math.min(1,P.sw)).toFixed(2))}
+function fkick(){if(!FA.raf)FA.raf=requestAnimationFrame(fstep)}
+function fstep(){
+ FA.raf=0;const P=FA.P,T=FA.T;if(!P||!T||!FA.r||!FA.r.root.isConnected)return;
+ let mv=false;const k0=RM?1:.16;
+ for(const k in T){const d=T[k]-P[k];if(Math.abs(d)>.02){P[k]+=d*k0;mv=true}else P[k]=T[k]}
+ if(P.bk){P.bk*=.72;if(P.bk<.03)P.bk=0;else mv=true}
+ const dx=FA.tx-FA.lx,dy=FA.ty-FA.ly;if(Math.abs(dx)>.02||Math.abs(dy)>.02){FA.lx+=dx*.2;FA.ly+=dy*.2;mv=true}
+ fpaint();if(mv)fkick()}
+function faceMount(t,c){
+ const root=$("#face");if(!root)return;
+ const mood=moodOf(t,c);
+ if(!FA.P)FA.P=Object.assign({bk:0},ftarget("idle"));
+ FA.T=ftarget(mood);
+ const q=x=>root.querySelector(x);
+ FA.r={root,bg:q("#f-bg"),el:q("#f-el"),er:q("#f-er"),eyes:q("#f-eyes"),bl:q("#f-bwl"),br:q("#f-bwr"),m:q("#f-m"),cl:q("#f-cl"),cr:q("#f-cr"),tr:q("#f-tr"),sw:q("#f-sw"),bub:q(".bub")};
+ root.dataset.m=mood;root.setAttribute("aria-label","Bunkit mood: "+FM[mood].t+". Tap to hear what it says.");
+ const mt=$("#moodtxt");if(mt){mt.textContent=FM[mood].t;mt.dataset.c=FM[mood].c}
+ root.addEventListener("animationend",e=>{if(e.target===root)root.classList.remove("hop","wob")});
+ if(FA.mood&&FA.mood!==mood&&!RM)root.classList.add(FRANK[mood]>FRANK[FA.mood]?"hop":"wob");
+ FA.mood=mood;FA.c=c;fpaint();fkick()}
+function faceTap(){
+ const r=FA.r;if(!r||!r.root.isConnected||!FA.mood)return;
+ const arr=MSG[FA.mood],txt=arr[FA.n++%arr.length].replace("{n}",pl(FA.c.need||1,"lecture"));
+ r.bub.textContent=txt;r.bub.classList.add("show");clearTimeout(FA.bubT);FA.bubT=setTimeout(()=>r.bub.classList.remove("show"),3000);
+ r.root.classList.remove("hop","wob");if(!RM){void r.root.offsetWidth;r.root.classList.add("hop")}
+ FA.P.bk=1;fkick()}
+(function blink(){setTimeout(()=>{if(!RM&&FA.r&&FA.P&&FA.r.root.isConnected&&FA.r.root.offsetParent){FA.P.bk=1;fkick()}blink()},2600+Math.random()*3400)})();
+addEventListener("pointermove",e=>{
+ const r=FA.r;if(RM||!r||!r.root.isConnected||!r.root.offsetParent)return;
+ const b=r.root.getBoundingClientRect(),dx=e.clientX-(b.left+b.width/2),dy=e.clientY-(b.top+b.height/2);
+ FA.tx=Math.max(-1,Math.min(1,dx/120))*2.6;FA.ty=Math.max(-1,Math.min(1,dy/120))*2;fkick();
+ clearTimeout(FA.lookT);FA.lookT=setTimeout(()=>{FA.tx=FA.ty=0;fkick()},2500)},{passive:true});
+
 function renderToday(){
  const t=totals(),c=calc(t.h,t.a),day=S.log[cur]||{},en=enter,nsl=newSlot;enter=false;newSlot=null;
  let list="";
@@ -404,14 +516,15 @@ function renderToday(){
   list+=`<div class="row" style="--i:${i+1}"><div class="info"><div class="nm">${esc(sb.name)}${n>1?`<span class="tag">${n} today</span>`:""}</div><div class="st">${s.a}/${s.h} · ${pc(k.p)}${ex?" · "+ex:""}</div></div>
   <div class="btns">${bt(0,arr[0])}</div>${xs}</div>`});
  lastPop=null;
- $("#tmain").innerHTML=`<div class="tgrid ${en?"enter":""}"><aside><div class="hero"><div class="tgt">Required<br><input type="number" inputmode="numeric" id="min" min="1" max="99" value="${S.min}" aria-label="Required attendance percent"> %</div>
- <div class="sub">Overall attendance</div><div class="big ${c.p==null?"":c.ok?"ok":"no"}" id="bigp">${pc(c.p)}</div>
- <div class="sub">${t.a} / ${t.h} lectures</div>
+ $("#tmain").innerHTML=`<div class="tgrid ${en?"enter":""}"><aside><div class="hero"><div class="hh"><div class="hl"><div class="sub">Overall attendance</div><div class="big ${c.p==null?"":c.ok?"ok":"no"}" id="bigp">${pc(c.p)}</div>
+ <div class="sub">${t.a} / ${t.h} lectures</div><div class="moodtxt" id="moodtxt"></div></div>
+ <div class="hr"><div class="tgt">Required<br><input type="number" inputmode="numeric" id="min" min="1" max="99" value="${S.min}" aria-label="Required attendance percent"> %</div>${FACE_HTML}</div></div>
  <div class="bar ${c.ok?"":"no"}"><i id="fill"></i><u style="left:${S.min}%"></u></div>
  <div class="adv">${advice(c)}</div></div></aside>
  <div><div class="datebar"><b>${cur===today?"Today, ":""}${fmt(cur,{weekday:"long",day:"numeric",month:"long",year:"numeric"})}</b>
  <span><input type="date" id="dt" value="${cur}" max="${today}" aria-label="Date to mark">${cur!==today?` <button class="btn" id="td">Back to today</button>`:""}</span></div>
  <div class="lgrow"><div class="legend">${TK} Attended &nbsp; ${XK} Bunked &nbsp; ${OC} Cancelled (not counted)</div>${S.subjects.length?`<button class="xbtn" id="xadd">＋ Extra lecture</button>`:""}</div>${list}</div></div>`;
+ faceMount(t,c);
  if(c.p==null){shown=null;shownW=0;return}
  const to=c.p*100,from=shown==null?0:shown,el=$("#bigp"),f=$("#fill"),d=(shown==null&&!RM)?280:0;
  f.style.width=shownW+"%";
@@ -505,6 +618,7 @@ function show(t){
 document.addEventListener("click",e=>{
  if(e.target.id==="xo")return closeXP();
  const t=e.target.closest("button,td.cell");if(!t)return;
+ if(t.id==="face"){buzz("C");return faceTap()}
  if(t.id==="xadd"){buzz("C");return openXP()}
  if(t.id==="xcancel"){return closeXP()}
  if(t.dataset.xs){buzz("P");return addSlot(t.dataset.xs)}
@@ -592,7 +706,20 @@ document.addEventListener("visibilitychange",()=>{
   $("#wn").addEventListener("keydown",e=>{if(e.key==="Enter"){e.preventDefault();go()}});$("#wn").focus()};
  document.addEventListener("keydown",onKey);step1()})();
 renderAll();renderAccount();paintAvatar();initCloud();
-if("serviceWorker" in navigator)addEventListener("load",()=>{try{navigator.serviceWorker.register("sw.js").catch(()=>{})}catch(e){}});
+/* Auto-update: when the app is opened/returned to while online, check for a newer index.html and reload into it. */
+if("serviceWorker" in navigator){
+ let reg=null,base=null,last=0;
+ const stamp=async()=>{try{const r=await fetch("index.html",{cache:"no-cache"});return r.ok?(r.headers.get("etag")||r.headers.get("last-modified")):null}catch(e){return null}};
+ const busy=()=>{const a=document.activeElement;return(a&&/^(INPUT|TEXTAREA|SELECT)$/.test(a.tagName))||!!document.querySelector("#wel:not([hidden])")};
+ const check=async()=>{const n=Date.now();if(!navigator.onLine||n-last<5000)return;last=n;
+  try{if(reg)reg.update()}catch(e){}
+  const v=await stamp();if(!v)return;
+  if(base===null){base=v;return}
+  if(v!==base){if(busy()){last=0;return}location.reload()}};
+ addEventListener("load",()=>{try{navigator.serviceWorker.register("sw.js").then(r=>{reg=r}).catch(()=>{})}catch(e){}check()});
+ document.addEventListener("visibilitychange",()=>{if(document.visibilityState==="visible")check()});
+ addEventListener("online",check);
+}
 </script>
 </body>
 </html>
