@@ -42,3 +42,41 @@ BUNKIT: GOOGLE SIGN-IN + SYNC SETUP (free, about 10 minutes)
    you should see "Continue with Google".
 
 If sign-in says "unauthorized-domain", step 3 is missing or has the wrong domain.
+
+
+ANALYTICS (free and optional): see how many people use the app
+-----------------------------------------------------------------
+Nothing is collected until you finish steps 1 to 3 below.
+
+1. Firebase console > Project settings (gear icon) > Integrations > Google Analytics > Enable.
+   Pick or create a Google Analytics account and keep the defaults. (Menu names may look slightly
+   different, but it is always under Project settings in your Firebase project.)
+
+2. Project settings > General > Your apps > your web app. You will now see a measurementId
+   that looks like G-XXXXXXXXXX. Copy it.
+
+3. In index.html, find the FB line near the top of the script and paste it into the last field:
+
+   const FB={apiKey:"...",authDomain:"...",projectId:"...",appId:"...",measurementId:"G-XXXXXXXXXX"};
+
+   Commit, wait a minute, then open your site once.
+
+WHERE TO LOOK
+- Firebase console > Analytics > Dashboard, or analytics.google.com. "Realtime" shows activity
+  within a minute. Most other reports fill in within about 24 hours.
+- Users, new vs returning, retention, countries and cities, phone/OS/browser: built in.
+- Custom events this app sends:
+    app_open          (display = "installed" for home-screen app users, "browser" for web visitors)
+    pwa_install       (someone added the app to their home screen)
+    onboard_complete  (finished the welcome pop-up)
+    tab_view          (tab = today / fore / reg / subj / account)
+    mark              (kind = P attended, A bunked, C cancelled, U undone)
+    subjects_added    (count)
+    login             (signed in with Google)
+- Firebase console > Authentication > Users lists everyone who signed in with Google.
+
+PRIVACY
+- The app never sends names, subject names, emails or attendance numbers to analytics.
+- People can switch it off in the Account tab ("Share anonymous usage stats").
+  Browsers set to Do Not Track are skipped automatically.
+- Good practice: mention in your README that the app collects anonymous usage statistics.

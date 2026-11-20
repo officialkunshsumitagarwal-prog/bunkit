@@ -241,6 +241,7 @@ nav button.av.has[aria-selected=true]{background:transparent;box-shadow:0 0 0 2p
 .srow label{min-width:0}
 .mv{grid-column:3}
 footer{padding:28px 12px 8px}
+.srow .mv button,.srow .mv .del{min-height:44px}
 @media (min-width:720px){.srow{grid-template-columns:minmax(0,1fr) 120px 120px auto}.srow .top{grid-column:auto}.mv{grid-column:auto}}
 @media (min-width:900px){.tgrid{margin-top:16px}.tgrid .hero,.tgrid .datebar{margin-top:0}.hero .big{font-size:56px}}
 /* face: livelier bubble, toast, spin */
@@ -252,6 +253,7 @@ footer{padding:28px 12px 8px}
 .toast{position:fixed;left:50%;bottom:calc(88px + env(safe-area-inset-bottom));transform:translate(-50%,12px);max-width:min(92vw,420px);padding:10px 14px;border-radius:14px;background:var(--ink);color:var(--bg);font-size:13px;font-weight:600;text-align:center;opacity:0;pointer-events:none;transition:opacity .25s,transform .25s;z-index:30}
 .toast.show{opacity:1;transform:translate(-50%,0)}
 @media (min-width:720px){.toast{bottom:28px}}
+.mv button{min-height:44px}
 @media (prefers-reduced-motion:reduce){*,*::before,*::after{animation:none!important;transition:none!important}}
 </style>
 </head>
@@ -317,7 +319,7 @@ function buzz(k){
 
 
 /* ===== Google sign-in + cross-device sync (Firebase). Paste your config into FB to enable; leave apiKey empty to stay local-only. ===== */
-const FB={apiKey:"AIzaSyDd0T6BKbgUKO2oZ_KZbMQ6ytEXy9ZeCw4",authDomain:"bunkit-afd34.firebaseapp.com",projectId:"bunkit-afd34",appId:"1:1031053254191:web:e42f50a8c251fe17eb30da"};
+const FB={apiKey:"AIzaSyDd0T6BKbgUKO2oZ_KZbMQ6ytEXy9ZeCw4",authDomain:"bunkit-afd34.firebaseapp.com",projectId:"bunkit-afd34",appId:"1:1031053254191:web:e42f50a8c251fe17eb30da",measurementId:"G-3YVVQW8V9G"};
 const UKEY="bunkit_synced_uid";
 let auth=null,db=null,user=null,unsub=null,pushT=null,hold=false,syncState="off",authMsg="",firstSnap=true;
 const loadJS=u=>new Promise((ok,no)=>{const e=document.createElement("script");e.src=u;e.onload=ok;e.onerror=no;document.head.appendChild(e)});
@@ -373,7 +375,7 @@ function onUser(u){
 async function signIn(){
  if(!auth){authMsg="Still connecting. Try again in a moment.";renderAcct();return}
  authMsg="";const p=new firebase.auth.GoogleAuthProvider();p.setCustomParameters({prompt:"select_account"});
- try{await auth.signInWithPopup(p)}catch(e){
+ try{await auth.signInWithPopup(p);track("login",{method:"google"})}catch(e){
   if(e.code==="auth/popup-blocked"||e.code==="auth/operation-not-supported-in-this-environment"){try{await auth.signInWithRedirect(p)}catch(_){}}
   else if(e.code!=="auth/popup-closed-by-user"&&e.code!=="auth/cancelled-popup-request"){authMsg="Sign-in failed ("+(e.code||"error")+")";renderAcct()}}}
 function signOut(){if(auth)auth.signOut()}
@@ -402,12 +404,19 @@ function renderAcct(){
  else h=`<b>Sync across devices</b><div class="note" style="margin:4px 0 12px">Sign in with Google to see the same attendance on every device.</div>
   <button class="btn gbtn" id="gin">${GIC}<span>Continue with Google</span></button>${authMsg?`<div class="note" style="color:var(--no)">${esc(authMsg)}</div>`:""}`;
  el.innerHTML=h}
+/* Anonymous usage stats (Google Analytics via Firebase). Stays OFF until FB.measurementId is filled in.
+   Only event names like "mark" or "tab_view" are sent. Never names, subjects or attendance numbers. */
+const AOFF="bunkit_analytics_off";let an=null;const AQ=[];
+function aOn(){try{return !!FB.measurementId&&localStorage.getItem(AOFF)!=="1"&&navigator.doNotTrack!=="1"}catch(e){return !!FB.measurementId}}
+function track(n,p){if(!aOn())return;try{if(an)an.logEvent(n,p||{});else if(AQ.length<30)AQ.push([n,p||{}])}catch(e){}}
+async function initAnalytics(){if(!aOn()||an)return;try{await loadJS("https://www.gstatic.com/firebasejs/10.12.2/firebase-analytics-compat.js");an=firebase.analytics();AQ.splice(0).forEach(e=>an.logEvent(e[0],e[1]))}catch(e){}}
+function setAnalytics(on){try{localStorage.setItem(AOFF,on?"0":"1")}catch(e){}if(an)try{an.setAnalyticsCollectionEnabled(!!on)}catch(e){}if(on)initAnalytics()}
 async function initCloud(){
  if(!FB.apiKey||auth)return;
  try{
   const b="https://www.gstatic.com/firebasejs/10.12.2/firebase-";
   await loadJS(b+"app-compat.js");await Promise.all([loadJS(b+"auth-compat.js"),loadJS(b+"firestore-compat.js")]);
-  firebase.initializeApp(FB);auth=firebase.auth();db=firebase.firestore();
+  firebase.initializeApp(FB);auth=firebase.auth();db=firebase.firestore();initAnalytics();
   auth.getRedirectResult().catch(()=>{});auth.onAuthStateChanged(onUser)
  }catch(e){auth=null;db=null;authMsg="Sync needs an internet connection.";renderAcct()}}
 addEventListener("online",()=>{if(!auth)initCloud();else renderAcct()});
@@ -439,7 +448,7 @@ function advice(c){
 function setMark(d,id,v,k=0){
  const arr=getArr(d,id);while(arr.length<=k)arr.push("");
  let kind=v;if(arr[k]===v){arr[k]="";kind="U"}else{arr[k]=v;lastPop={id,v,k}}
- putArr(d,id,arr);save();renderMost();faceReact(kind,id)}
+ putArr(d,id,arr);save();renderMost();faceReact(kind,id);track("mark",{kind})}
 function openXP(){
  if(!S.subjects.length)return;
  if(S.subjects.length===1)return addSlot(S.subjects[0].id);
@@ -686,12 +695,14 @@ function renderAccount(){
  <div class="card"><b>Reset</b>
  <div class="note" style="margin:4px 0 0">Erases all your subjects and attendance${FB.apiKey?", including the synced copy if you’re signed in":""}. Your name is kept.</div>
  <div class="tools"><button class="dng" id="rst">Reset</button></div></div>
+ ${FB.measurementId?`<div class="card"><label style="display:flex;align-items:center;gap:10px;font-weight:600;min-height:44px;cursor:pointer"><input type="checkbox" id="anon" style="width:22px;height:22px;accent-color:var(--acc)" ${aOn()?"checked":""}> Share anonymous usage stats</label><div class="note" style="margin:6px 0 0">Helps improve the app. Your name, subjects and attendance are never sent.</div></div>`:""}
  <div class="note">${FB.apiKey?"Without signing in, your data is saved on this device only.":"Your data is saved on this device only."}</div>`;
  renderName();renderAcct()}
 const renderMost=()=>{renderToday();renderFore();renderReg();paintCounts()};
 const renderAll=()=>{renderMost();renderSubj();renderName()};
 
 function show(t){
+ track("tab_view",{tab:t});
  document.querySelectorAll("nav button").forEach(b=>b.setAttribute("aria-selected",b.dataset.t===t));
  document.querySelectorAll(".view").forEach(v=>{const on=v.id===t;v.hidden=!on;v.classList.remove("in");if(on){void v.offsetWidth;v.classList.add("in");clearTimeout(v._t);v._t=setTimeout(()=>v.classList.remove("in"),800)}});
  if(t==="today"){enter=true;shown=null;shownW=0;renderToday()}if(t==="fore")animFore();window.scrollTo(0,0)}
@@ -716,7 +727,7 @@ document.addEventListener("click",e=>{
   const o=getArr(d,id)[0],n={undefined:"P",P:"A",A:"C",C:undefined}[o];
   putArr(d,id,[n||""]);save();return renderMost()}
  if(t.id==="addb"){const names=$("#bulk").value.split("\n").map(x=>x.trim().slice(0,40)).filter(Boolean);
-  names.forEach(n=>{const id="s"+Date.now().toString(36)+Math.random().toString(36).slice(2,6);S.subjects.push({id,name:n});S.open[id]={h:0,a:0}});
+  names.forEach(n=>{const id="s"+Date.now().toString(36)+Math.random().toString(36).slice(2,6);S.subjects.push({id,name:n});S.open[id]={h:0,a:0}});track("subjects_added",{count:names.length});
   save();return renderAll()}
  if(t.dataset.del){if(!t.dataset.arm){t.dataset.arm=1;t.classList.add("armed");t.textContent="Confirm?";setTimeout(()=>{t.dataset.arm="";t.classList.remove("armed");t.textContent="Remove"},3000);return}
   const id=t.dataset.del;S.subjects=S.subjects.filter(s=>s.id!==id);delete S.open[id];delete S.plan[id];
@@ -752,6 +763,7 @@ document.addEventListener("pointerdown",e=>{
 document.addEventListener("change",e=>{
  const t=e.target;
  if(t.id==="uname"){S.name=t.value.trim().slice(0,30);save()}
+ else if(t.id==="anon"){setAnalytics(t.checked)}
  else if(t.id==="min"){const o=S.min;S.min=Math.min(99,Math.max(1,+t.value||78));save();renderMost();if(S.min!==o)faceReact(S.min>o?"RU":"RD")}
  else if(t.id==="dt"){cur=t.value&&t.value<=today?t.value:today;enter=true;renderToday()}
  else if(t.dataset.o){const id=t.dataset.id,k=t.dataset.o,o=S.open[id]||(S.open[id]={h:0,a:0});o[k]=Math.max(0,Math.round(+t.value||0)-logStats(id)[k]);save();renderMost()}
@@ -762,7 +774,7 @@ document.addEventListener("visibilitychange",()=>{
  const n=iso(new Date());if(!document.hidden&&n!==today){if(cur===today)cur=n;today=n;renderMost()}});
 (function(){let seen=null;try{seen=localStorage.getItem("attendance_welcome_v1")}catch(e){}
  if(seen)return;const w=$("#wel"),b=$("#wbody");w.hidden=false;
- const close=()=>{try{localStorage.setItem("attendance_welcome_v1","1")}catch(e){}
+ const close=()=>{try{localStorage.setItem("attendance_welcome_v1","1")}catch(e){}track("onboard_complete");
   w.classList.add("out");setTimeout(()=>{w.hidden=true;shown=null;shownW=0;enter=true;renderToday()},260);document.removeEventListener("keydown",onKey)};
  window._closeWel=close;
  let locked=false,tick=null;
@@ -787,6 +799,8 @@ document.addEventListener("visibilitychange",()=>{
   $("#wn").addEventListener("keydown",e=>{if(e.key==="Enter"){e.preventDefault();go()}});$("#wn").focus()};
  document.addEventListener("keydown",onKey);step1()})();
 renderAll();renderAccount();paintAvatar();initCloud();
+track("app_open",{display:matchMedia("(display-mode: standalone)").matches?"installed":"browser"});
+addEventListener("appinstalled",()=>track("pwa_install"));
 /* Auto-update: when the app is opened/returned to while online, check for a newer index.html and reload into it. */
 if("serviceWorker" in navigator){
  let reg=null,base=null,last=0;
