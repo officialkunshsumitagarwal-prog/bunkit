@@ -155,11 +155,15 @@ footer .ig:active .gf,footer .ig:focus-visible .gf{fill:url(#igg)}
 .xbtn{min-height:40px;padding:6px 14px;border-radius:999px;border:1.5px dashed var(--acc);background:transparent;color:var(--acc);font:inherit;font-size:13px;font-weight:600;cursor:pointer;transition:transform .12s,background-color .2s}
 .xbtn:active{transform:scale(.95);background:var(--accbg)}
 .tag{font-size:11px;font-weight:600;color:var(--acc);background:var(--accbg);border-radius:999px;padding:2px 8px;margin-left:8px;white-space:nowrap;vertical-align:middle}
-.xs{flex:1 1 100%;display:flex;align-items:center;gap:8px 12px;flex-wrap:wrap;border-top:1px dashed var(--line);padding-top:10px}
+.xs{flex:1 1 100%;display:flex;align-items:center;gap:4px 12px;flex-wrap:wrap;border-top:1px dashed var(--line);padding-top:8px}
+.xs .btns{margin-left:auto}
 .xs.new{animation:rise .4s cubic-bezier(.2,.8,.2,1) both}
-.xs .xl{flex:1;min-width:76px;font-size:13px;color:var(--mute);font-weight:600}
-.xr{width:40px;height:40px;border-radius:50%;border:1.5px solid var(--line);background:transparent;color:var(--mute);font-size:20px;line-height:1;cursor:pointer;flex:none;transition:transform .12s}
-.xr:active{transform:scale(.88)}
+.xs .xl{flex:0 1 auto;min-width:0;font-size:13px;color:var(--mute);font-weight:600}
+.xr{display:inline-flex;align-items:center;justify-content:center;width:40px;height:44px;margin-left:-6px;padding:0;border:0;background:transparent;color:var(--mute);cursor:pointer;flex:none;-webkit-tap-highlight-color:transparent;transition:color .2s,transform .12s}
+.xr svg{width:21px;height:21px;display:block}
+.xr:active{transform:scale(.86);color:var(--no)}
+.xr:focus-visible{color:var(--no)}
+@media (hover:hover){.xr:hover{color:var(--no)}}
 .xlist{display:grid;gap:8px;max-height:46vh;overflow-y:auto;-webkit-overflow-scrolling:touch}
 .xlist .btn{text-align:left;font-weight:600}
 .cell.M{font-size:15px;letter-spacing:2px;white-space:nowrap}
@@ -317,13 +321,42 @@ const parse=s=>{const[y,m,d]=s.split("-").map(Number);return new Date(y,m-1,d)};
 const fmt=(s,o)=>parse(s).toLocaleDateString(undefined,o);
 let today=iso(new Date()),cur=today,enter=true,lastPop=null,newSlot=null,shown=null,shownW=0;
 
+/* ===== Haptics engine =====
+   Android (Chrome, Samsung Internet, Firefox) uses navigator.vibrate with [on,off,on,...] patterns in ms.
+   Important: many Samsung phones ignore pulses shorter than ~25ms, so every pulse here is 30ms or longer.
+   iPhones (iOS 17.4+) get a tap through a hidden native switch (see #hl / #hl2). */
+const HAP={
+ P:[40,30,70],            /* attended: quick "ta-dum" */
+ A:[60,50,60],            /* bunked: two firm buzzes */
+ C:[34],                  /* cancelled / general tap */
+ U:[30],                  /* undo a mark */
+ add:[32,36,52],          /* extra lecture added */
+ del:[80],                /* deleted */
+ warn:[65,45,65,45,65],   /* are you sure? */
+ ok:[35,30,35,30,100],    /* success */
+ hard:[100,60,100],       /* reset done */
+ up:[30,25,30,25,30,25,95],  /* mood got better */
+ down:[110,70,50],           /* mood got worse */
+ m_ecstatic:[30,25,30,25,30,25,95],m_happy:[35,30,70],m_content:[45],m_idle:[34],
+ m_nervous:[30,40,30,40,30,40,30],m_sad:[90,70,50],m_verysad:[110,80,60],m_crying:[55,45,55,45,55,45,55]};
+const IOS2={A:1,warn:1,ok:1,add:1,hard:1,up:1,m_ecstatic:1,m_happy:1,m_nervous:1,m_crying:1};  /* patterns that tap twice on iPhone */
+const hapOn=()=>{try{return localStorage.getItem("bunkit_haptics_off")!=="1"&&S.hap!==false}catch(e){return S.hap!==false}};
+function setHap(on){try{localStorage.setItem("bunkit_haptics_off",on?"0":"1")}catch(e){}if(on)buzz("ok")}
 function buzz(k){
- if(S.hap===false)return;
+ if(!hapOn()||document.hidden)return;
+ const p=HAP[k]||HAP.C;
  try{
-  if(navigator.vibrate&&navigator.vibrate(k==="P"?[16]:k==="A"?[28,40,28]:[9]))return;
+  if(typeof navigator.vibrate==="function"){navigator.vibrate(p);return}
   const l=$("#hl");if(!l)return;
-  l.click();if(k==="A"){const l2=$("#hl2");if(l2)l2.click()}
+  l.click();if(IOS2[k]){const l2=$("#hl2");if(l2)l2.click()}
  }catch(e){}}
+const buzzLater=(k,ms)=>setTimeout(()=>buzz(k),ms);
+function hapDemo(){
+ const m=$("#hpmsg");
+ if(!hapOn()){if(m)m.textContent="Vibration is switched off. Turn it on above, then try again.";return}
+ if(typeof navigator.vibrate!=="function"&&!$("#hl")){if(m)m.textContent="This device doesn’t allow vibration from the browser.";return}
+ [["P","Attended"],["A","Bunked"],["C","Cancelled"]].forEach((x,i)=>setTimeout(()=>{buzz(x[0]);if(m)m.textContent="Buzz "+(i+1)+" of 3: "+x[1]},i*800));
+ setTimeout(()=>{if(m)m.textContent="You should have felt 3 different buzzes. If not, check your phone’s vibration settings and that battery saver is off."},3*800+250)}
 
 
 /* ===== Google sign-in + cross-device sync (Firebase). Paste your config into FB to enable; leave apiKey empty to stay local-only. ===== */
@@ -576,7 +609,7 @@ function faceMount(t,c){
  root.dataset.m=mood;root.setAttribute("aria-label","Bunkit mood: "+FM[mood].t+". Tap to hear what it says.");
  const mt=$("#moodtxt");if(mt){mt.textContent=FM[mood].t;mt.dataset.c=FM[mood].c}
  root.addEventListener("animationend",e=>{if(e.target===root)root.classList.remove("hop","wob","spin")});
- if(FA.mood&&FA.mood!==mood&&!RM)root.classList.add(FRANK[mood]>FRANK[FA.mood]?"hop":"wob");
+ if(FA.mood&&FA.mood!==mood){if(!RM)root.classList.add(FRANK[mood]>FRANK[FA.mood]?"hop":"wob");buzzLater(FRANK[mood]>FRANK[FA.mood]?"up":"down",330)}
  FA.mood=mood;FA.c=c;fpaint();fkick();
  if(!FA.greeted){const w=$("#wel");if(!(w&&!w.hidden)){FA.greeted=true;setTimeout(()=>speak(ffill(greet(),fcx())),1100)}}}
 function fcx(){const c=FA.c||{};let w=null,b=null;
@@ -637,7 +670,7 @@ function renderToday(){
  S.subjects.forEach((sb,i)=>{const s=stats(sb.id),k=calc(s.h,s.a),arr=marks(day[sb.id]),n=Math.max(1,arr.length);
   const ex=k.p==null?"":k.ok?(k.skip>0?`<span class="ok">can bunk ${k.skip}</span>`:""):`<span class="no">attend ${k.need} more</span>`;
   const bt=(q,cv)=>["P","A","C"].map(x=>`<button class="b ${cv===x?"sel "+x:""}${lastPop&&lastPop.id===sb.id&&lastPop.v===x&&lastPop.k===q?" pop":""}" data-id="${sb.id}" data-v="${x}" data-k="${q}" aria-pressed="${cv===x}" aria-label="${esc(sb.name)}${q?", lecture "+(q+1):""}: ${LBL[x]}">${SYM[x]}</button>`).join("");
-  let xs="";for(let q=1;q<n;q++)xs+=`<div class="xs${nsl&&nsl.id===sb.id&&nsl.k===q?" new":""}"><span class="xl">Lecture ${q+1}</span><div class="btns">${bt(q,arr[q])}</div><button class="xr" data-xr="${sb.id}:${q}" aria-label="Remove lecture ${q+1} of ${esc(sb.name)}">×</button></div>`;
+  let xs="";for(let q=1;q<n;q++)xs+=`<div class="xs${nsl&&nsl.id===sb.id&&nsl.k===q?" new":""}"><span class="xl">Lecture ${q+1}</span><button class="xr" data-xr="${sb.id}:${q}" aria-label="Delete lecture ${q+1} of ${esc(sb.name)}" title="Delete lecture"><svg viewBox="0 0 24 24" aria-hidden="true"><g fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 7h16"/><path d="M9.5 7V4.8c0-.4.3-.8.8-.8h3.4c.5 0 .8.4.8.8V7"/><path d="M6.2 7l.8 12.2c.1.9.8 1.6 1.7 1.6h6.6c.9 0 1.6-.7 1.7-1.6L17.8 7"/><path d="M10 11v6M14 11v6"/></g></svg></button><div class="btns">${bt(q,arr[q])}</div></div>`;
   list+=`<div class="row" style="--i:${i+1}"><div class="info"><div class="nm">${esc(sb.name)}${n>1?`<span class="tag">${n} today</span>`:""}</div><div class="st"><span>${s.a}/${s.h} · ${pc(k.p)}</span>${ex}</div></div>
   <div class="btns">${bt(0,arr[0])}</div>${xs}</div>`});
  lastPop=null;
@@ -731,6 +764,9 @@ function renderAccount(){
  <div class="card"><b>Reset</b>
  <div class="note" style="margin:4px 0 0">Erases all your subjects and attendance${FB.apiKey?", including the synced copy if you’re signed in":""}. Your name is kept.</div>
  <div class="tools"><button class="dng" id="rst">Reset</button></div></div>
+ <div class="card"><label style="display:flex;align-items:center;gap:10px;font-weight:600;min-height:44px;cursor:pointer"><input type="checkbox" id="hapt" style="width:22px;height:22px;accent-color:var(--acc)" ${hapOn()?"checked":""}> Vibration feedback</label>
+ <div class="note" style="margin:6px 0 0">A little buzz as you tap, and each mark feels different. Works on most Android phones, and on iPhones with iOS 17.4 or newer.</div>
+ <div class="tools"><button id="hptest">Try it</button></div><div class="note" id="hpmsg" role="status"></div></div>
  ${FB.measurementId?`<div class="card"><label style="display:flex;align-items:center;gap:10px;font-weight:600;min-height:44px;cursor:pointer"><input type="checkbox" id="anon" style="width:22px;height:22px;accent-color:var(--acc)" ${aOn()?"checked":""}> Share anonymous usage stats</label><div class="note" style="margin:6px 0 0">Helps improve the app. Your name, subjects and attendance are never sent.</div></div>`:""}
  <div class="note">${FB.apiKey?"Without signing in, your data is saved on this device only.":"Your data is saved on this device only."}</div>`;
  renderName();renderAcct()}
@@ -748,20 +784,21 @@ document.addEventListener("click",e=>{
  if(e.target.id==="shr")return closeShare();
  {const a=e.target.closest("#shwa,#shtg");if(a)track("share",{method:a.id==="shwa"?"whatsapp":"telegram"})}
  const t=e.target.closest("button,td.cell");if(!t)return;
+ if(t.id==="hptest"){return hapDemo()}
  if(t.id==="shbtn"){buzz("C");return shareApp()}
  if(t.id==="shclose"){return closeShare()}
- if(t.id==="shcopy"){buzz("P");copyText(shareMsg(appUrl())).then(ok=>{t.textContent=ok?"Copied ✓":"Couldn’t copy. Select the text above.";track("share",{method:"copy"});setTimeout(()=>{t.textContent="Copy message"},2400)});return}
- if(t.id==="face"){if(FA.held){FA.held=false;return}buzz("C");return faceTap()}
+ if(t.id==="shcopy"){buzz("C");copyText(shareMsg(appUrl())).then(ok=>{if(ok)buzz("ok");t.textContent=ok?"Copied ✓":"Couldn’t copy. Select the text above.";track("share",{method:"copy"});setTimeout(()=>{t.textContent="Copy message"},2400)});return}
+ if(t.id==="face"){if(FA.held){FA.held=false;return}buzz("m_"+(FA.mood||"idle"));return faceTap()}
  if(t.id==="xadd"){buzz("C");return openXP()}
  if(t.id==="xcancel"){return closeXP()}
- if(t.dataset.xs){buzz("P");return addSlot(t.dataset.xs)}
- if(t.dataset.xr){const[id,q]=t.dataset.xr.split(":"),arr=getArr(cur,id);arr.splice(+q,1);putArr(cur,id,arr);buzz("C");save();return renderMost()}
+ if(t.dataset.xs){buzz("add");return addSlot(t.dataset.xs)}
+ if(t.dataset.xr){const[id,q]=t.dataset.xr.split(":"),arr=getArr(cur,id);arr.splice(+q,1);putArr(cur,id,arr);buzz("del");save();return renderMost()}
  if(t.dataset.pl){const[id,k,d]=t.dataset.pl.split(":");const p=S.plan[id]||(S.plan[id]={s:0,a:0});p[k]=Math.min(PLMAX,Math.max(0,(+p[k]||0)+ +d));if(!p.s&&!p.a)delete S.plan[id];buzz("C");save();return paintPlan()}
  if(t.id==="plclr"){buzz("C");S.plan={};save();return paintPlan()}
  if(t.id==="gin"){buzz("C");return signIn()}
  if(t.id==="gout"){buzz("C");return signOut()}
  if(t.dataset.t){buzz("C");return show(t.dataset.t)}
- if(t.classList.contains("b")&&t.dataset.v){buzz(t.dataset.v);return setMark(cur,t.dataset.id,t.dataset.v,+t.dataset.k||0)}
+ if(t.classList.contains("b")&&t.dataset.v){const cv=getArr(cur,t.dataset.id)[+t.dataset.k||0];buzz(cv===t.dataset.v?"U":t.dataset.v);return setMark(cur,t.dataset.id,t.dataset.v,+t.dataset.k||0)}
  if(t.id==="td"){cur=today;enter=true;return renderToday()}
  if(t.classList.contains("cell")){buzz("C");const d=t.dataset.d,id=t.dataset.id;
   if(t.dataset.m){cur=d;enter=true;return show("today")}
@@ -770,15 +807,15 @@ document.addEventListener("click",e=>{
  if(t.id==="addb"){const names=$("#bulk").value.split("\n").map(x=>x.trim().slice(0,40)).filter(Boolean);
   names.forEach(n=>{const id="s"+Date.now().toString(36)+Math.random().toString(36).slice(2,6);S.subjects.push({id,name:n});S.open[id]={h:0,a:0}});track("subjects_added",{count:names.length});
   save();return renderAll()}
- if(t.dataset.del){if(!t.dataset.arm){t.dataset.arm=1;t.classList.add("armed");t.textContent="Confirm?";setTimeout(()=>{t.dataset.arm="";t.classList.remove("armed");t.textContent="Remove"},3000);return}
-  const id=t.dataset.del;S.subjects=S.subjects.filter(s=>s.id!==id);delete S.open[id];delete S.plan[id];
+ if(t.dataset.del){if(!t.dataset.arm){buzz("warn");t.dataset.arm=1;t.classList.add("armed");t.textContent="Confirm?";setTimeout(()=>{t.dataset.arm="";t.classList.remove("armed");t.textContent="Remove"},3000);return}
+  buzz("del");const id=t.dataset.del;S.subjects=S.subjects.filter(s=>s.id!==id);delete S.open[id];delete S.plan[id];
   for(const d in S.log){delete S.log[d][id];if(!Object.keys(S.log[d]).length)delete S.log[d]}save();return renderAll()}
  if(t.id==="exp"){$("#bkp").innerHTML='<textarea id="bk" rows="5" readonly></textarea><div class="note">Copy and keep this text.</div>';
   const x=$("#bk");x.value=JSON.stringify(S);x.focus();x.select();try{navigator.clipboard.writeText(x.value).catch(()=>{})}catch(e){}}
  if(t.id==="imp")$("#bkp").innerHTML='<textarea id="bk" rows="5" placeholder="Paste backup"></textarea><div class="tools"><button id="go">Restore now</button></div><div class="note" id="bm"></div>';
- if(t.id==="go"){try{const o=JSON.parse($("#bk").value);if(o&&typeof o.log==="object"&&o.open&&(o.v!==2||Array.isArray(o.subjects))){S=migrate(o);save();shown=null;shownW=0;renderAll();$("#bkp").innerHTML='<div class="note">Backup restored.</div>'}else $("#bm").textContent="That text is not an attendance backup."}catch(x){$("#bm").textContent="That text could not be read."}}
- if(t.id==="rst"){if(!t.dataset.arm){t.dataset.arm=1;t.classList.add("armed");t.textContent="Confirm?";clearTimeout(t._t);t._t=setTimeout(()=>{t.dataset.arm="";t.classList.remove("armed");t.textContent="Reset"},4000)}
-  else{clearTimeout(t._t);t.dataset.arm="";t.classList.remove("armed");t.textContent="Reset";const nm=S.name;S=D();S.name=nm;save();shown=null;shownW=0;renderAll();$("#bkp").innerHTML='<div class="note">All data has been reset.</div>'}}
+ if(t.id==="go"){try{const o=JSON.parse($("#bk").value);if(o&&typeof o.log==="object"&&o.open&&(o.v!==2||Array.isArray(o.subjects))){S=migrate(o);save();shown=null;shownW=0;renderAll();buzz("ok");$("#bkp").innerHTML='<div class="note">Backup restored.</div>'}else $("#bm").textContent="That text is not an attendance backup."}catch(x){$("#bm").textContent="That text could not be read."}}
+ if(t.id==="rst"){if(!t.dataset.arm){buzz("warn");t.dataset.arm=1;t.classList.add("armed");t.textContent="Confirm?";clearTimeout(t._t);t._t=setTimeout(()=>{t.dataset.arm="";t.classList.remove("armed");t.textContent="Reset"},4000)}
+  else{buzz("hard");clearTimeout(t._t);t.dataset.arm="";t.classList.remove("armed");t.textContent="Reset";const nm=S.name;S=D();S.name=nm;save();shown=null;shownW=0;renderAll();$("#bkp").innerHTML='<div class="note">All data has been reset.</div>'}}
 });
 document.addEventListener("pointerdown",e=>{
  const g=e.target.closest(".grip");if(!g)return;
@@ -805,6 +842,7 @@ document.addEventListener("change",e=>{
  const t=e.target;
  if(t.id==="uname"){S.name=t.value.trim().slice(0,30);save()}
  else if(t.id==="anon"){setAnalytics(t.checked)}
+ else if(t.id==="hapt"){setHap(t.checked)}
  else if(t.id==="min"){const o=S.min;S.min=Math.min(99,Math.max(1,+t.value||78));save();renderMost();if(S.min!==o)faceReact(S.min>o?"RU":"RD")}
  else if(t.id==="dt"){cur=t.value&&t.value<=today?t.value:today;enter=true;renderToday()}
  else if(t.dataset.o){const id=t.dataset.id,k=t.dataset.o,o=S.open[id]||(S.open[id]={h:0,a:0});o[k]=Math.max(0,Math.round(+t.value||0)-logStats(id)[k]);save();renderMost()}
@@ -829,7 +867,7 @@ document.addEventListener("visibilitychange",()=>{
   const ok=$("#wok");let left=10;locked=true;
   tick=setInterval(()=>{left--;
    if(left>0){ok.firstChild.textContent="Let’s begin ("+left+")";return}
-   clearInterval(tick);locked=false;ok.disabled=false;ok.classList.remove("cd");ok.textContent="Let’s begin";buzz("P");ok.focus()},1000);
+   clearInterval(tick);locked=false;ok.disabled=false;ok.classList.remove("cd");ok.textContent="Let’s begin";buzz("ok");ok.focus()},1000);
   ok.onclick=()=>{clearInterval(tick);close()}};
  const step1=()=>{b.innerHTML=`<h2 id="wt">Welcome</h2><p>What should we call you?</p>
   <input type="text" id="wn" maxlength="30" autocomplete="given-name" placeholder="Your name" aria-label="Your name">
