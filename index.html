@@ -110,6 +110,12 @@ footer .soc svg{width:20px;height:20px}
 footer .soc:active{transform:scale(.88)}
 @media (hover:hover){footer .li:hover{color:#0a66c2;opacity:1}footer .ig:hover{opacity:1}footer .ig:hover .gs{stroke:url(#igg)}footer .ig:hover .gf{fill:url(#igg)}}
 footer .li:active,footer .li:focus-visible{color:#0a66c2;opacity:1}
+footer button.soc{border:0;background:transparent;padding:0;cursor:pointer;font:inherit}
+@media (hover:hover){footer .sh:hover{color:var(--acc);opacity:1}}
+footer .sh:active,footer .sh:focus-visible{color:var(--acc);opacity:1}
+.shbox{white-space:pre-wrap;overflow-wrap:anywhere;max-height:32vh;overflow-y:auto;-webkit-overflow-scrolling:touch;margin:10px 0 14px;padding:12px;border-radius:12px;background:var(--bg);border:1px solid var(--line);font-size:13px;line-height:1.45;user-select:text;-webkit-user-select:text}
+.shbtns{display:grid;gap:8px}
+.shbtns a.btn{display:flex;align-items:center;justify-content:center;text-decoration:none;font-weight:600}
 footer .ig:active,footer .ig:focus-visible{opacity:1}
 footer .ig:active .gs,footer .ig:focus-visible .gs{stroke:url(#igg)}
 footer .ig:active .gf,footer .ig:focus-visible .gf{fill:url(#igg)}
@@ -277,8 +283,10 @@ footer{padding:28px 12px 8px}
 <footer>Created by Kunsh S Agarwal
 <a class="soc li" href="https://www.linkedin.com/in/kunshsumitagarwal" target="_blank" rel="noopener noreferrer" aria-label="LinkedIn"><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="2" y="2" width="20" height="20" rx="3.5" fill="currentColor"/><g fill="var(--bg)"><rect x="6" y="9.6" width="2.5" height="8"/><circle cx="7.25" cy="6.8" r="1.5"/><path d="M10.8 9.6h2.4v1.1c.4-.7 1.3-1.3 2.6-1.3 2.3 0 2.8 1.5 2.8 3.4v4.8h-2.5v-4.2c0-1-.1-1.9-1.3-1.9s-1.5.9-1.5 1.9v4.2h-2.5z"/></g></svg></a>
 <a class="soc ig" href="https://www.instagram.com/kunshsumitagarwal/" target="_blank" rel="noopener noreferrer" aria-label="Instagram"><svg viewBox="0 0 24 24" aria-hidden="true"><rect class="gs" x="3" y="3" width="18" height="18" rx="5.2" fill="none" stroke="currentColor" stroke-width="1.9"/><circle class="gs" cx="12" cy="12" r="4.1" fill="none" stroke="currentColor" stroke-width="1.9"/><circle class="gf" cx="17.3" cy="6.7" r="1.15" fill="currentColor"/></svg></a>
+<button class="soc sh" id="shbtn" type="button" aria-label="Share Bunkit with friends" title="Share Bunkit"><svg viewBox="0 0 24 24" aria-hidden="true"><g fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><circle cx="18" cy="5.5" r="2.6"/><circle cx="6" cy="12" r="2.6"/><circle cx="18" cy="18.5" r="2.6"/><path d="M8.3 10.7l7.4-4M8.3 13.3l7.4 4"/></g></svg></button>
 <svg width="0" height="0" style="position:absolute" aria-hidden="true"><defs><linearGradient id="igg" gradientUnits="userSpaceOnUse" x1="3" y1="21" x2="21" y2="3"><stop offset="0" stop-color="#f09433"/><stop offset=".5" stop-color="#dc2743"/><stop offset="1" stop-color="#bc1888"/></linearGradient></defs></svg>
 </footer>
+<div class="ov" id="shr" role="dialog" aria-modal="true" aria-labelledby="sht" hidden><div class="mod" id="shbody"></div></div>
 <div class="ov" id="xo" role="dialog" aria-modal="true" aria-labelledby="xt" hidden><div class="mod" id="xbody"></div></div>
 <div class="ov" id="syn" role="dialog" aria-modal="true" aria-labelledby="st" hidden><div class="mod" id="sbody"></div></div>
 <div class="ov" id="wel" role="dialog" aria-modal="true" aria-labelledby="wt" hidden><div class="mod" id="wbody"></div></div>
@@ -449,6 +457,35 @@ function setMark(d,id,v,k=0){
  const arr=getArr(d,id);while(arr.length<=k)arr.push("");
  let kind=v;if(arr[k]===v){arr[k]="";kind="U"}else{arr[k]=v;lastPop={id,v,k}}
  putArr(d,id,arr);save();renderMost();faceReact(kind,id);track("mark",{kind})}
+/* ===== Share Bunkit (footer button) ===== */
+const appUrl=()=>{try{return new URL("./",location.href).href}catch(e){return location.origin+location.pathname}};
+const shareMsg=(u,withLink=true)=>["Hey everyone! 👋","",
+ "*Bunkit* is a free tool to track your lecture attendance and see exactly how many lectures you can safely bunk 🤫","",
+ ...(withLink?["Open it here: "+u,""]:[]),
+ "*Add it to your home screen so it works like a real app:*",
+ "• *iPhone:* open the link in *Safari* → tap Share → *Add to Home Screen*",
+ "• *Android:* open the link in *Chrome* → tap ⋮ (three dots) → *Install app* / *Add to Home screen*","",
+ "✨ Works offline, no sign-up needed, and your data stays on your phone unless you choose to sync.","",
+ "Enjoy, and bunk wisely 😜"].join("\n");
+async function copyText(x){
+ try{await navigator.clipboard.writeText(x);return true}catch(e){
+  try{const ta=document.createElement("textarea");ta.value=x;ta.setAttribute("readonly","");ta.style.cssText="position:fixed;top:0;left:0;opacity:0";document.body.appendChild(ta);ta.select();const ok=document.execCommand("copy");ta.remove();return ok}catch(_){return false}}}
+function openShare(u,text){
+ const o=$("#shr");o.classList.remove("out");o.hidden=false;
+ $("#shbody").innerHTML=`<h2 id="sht">Share Bunkit</h2><p>Send this to your friends. It includes the link and how to install the app.</p>
+ <div class="shbox" id="shtxt" tabindex="0">${esc(text)}</div>
+ <div class="shbtns"><button class="btn pri" id="shcopy">Copy message</button>
+ <a class="btn" id="shwa" href="https://wa.me/?text=${encodeURIComponent(text)}" target="_blank" rel="noopener noreferrer">Share on WhatsApp</a>
+ <a class="btn" id="shtg" href="https://t.me/share/url?url=${encodeURIComponent(u)}&text=${encodeURIComponent(shareMsg(u,false))}" target="_blank" rel="noopener noreferrer">Share on Telegram</a></div>
+ <button class="btn" id="shclose" style="margin-top:10px;border:0;background:none;color:var(--mute)">Close</button>`;
+ setTimeout(()=>{const b=$("#shcopy");if(b)b.focus()},60)}
+function closeShare(){const o=$("#shr");if(o.hidden)return;o.classList.add("out");setTimeout(()=>{o.hidden=true},280)}
+async function shareApp(){
+ const u=appUrl(),text=shareMsg(u);
+ if(navigator.share){
+  try{await navigator.share({title:"Bunkit",text});track("share",{method:"native"});return}
+  catch(e){if(e&&e.name==="AbortError")return}}
+ openShare(u,text)}
 function openXP(){
  if(!S.subjects.length)return;
  if(S.subjects.length===1)return addSlot(S.subjects[0].id);
@@ -709,7 +746,12 @@ function show(t){
 
 document.addEventListener("click",e=>{
  if(e.target.id==="xo")return closeXP();
+ if(e.target.id==="shr")return closeShare();
+ {const a=e.target.closest("#shwa,#shtg");if(a)track("share",{method:a.id==="shwa"?"whatsapp":"telegram"})}
  const t=e.target.closest("button,td.cell");if(!t)return;
+ if(t.id==="shbtn"){buzz("C");return shareApp()}
+ if(t.id==="shclose"){return closeShare()}
+ if(t.id==="shcopy"){buzz("P");copyText(shareMsg(appUrl())).then(ok=>{t.textContent=ok?"Copied ✓":"Couldn’t copy. Select the text above.";track("share",{method:"copy"});setTimeout(()=>{t.textContent="Copy message"},2400)});return}
  if(t.id==="face"){if(FA.held){FA.held=false;return}buzz("C");return faceTap()}
  if(t.id==="xadd"){buzz("C");return openXP()}
  if(t.id==="xcancel"){return closeXP()}
@@ -769,7 +811,7 @@ document.addEventListener("change",e=>{
  else if(t.dataset.o){const id=t.dataset.id,k=t.dataset.o,o=S.open[id]||(S.open[id]={h:0,a:0});o[k]=Math.max(0,Math.round(+t.value||0)-logStats(id)[k]);save();renderMost()}
  else if(t.dataset.n){const s=S.subjects.find(x=>x.id===t.dataset.n),v=t.value.trim();if(v)s.name=v;else t.value=s.name;save();renderMost()}
 });
-document.addEventListener("keydown",e=>{if(e.key==="Escape")closeXP()});
+document.addEventListener("keydown",e=>{if(e.key==="Escape"){closeXP();closeShare()}});
 document.addEventListener("visibilitychange",()=>{
  const n=iso(new Date());if(!document.hidden&&n!==today){if(cur===today)cur=n;today=n;renderMost()}});
 (function(){let seen=null;try{seen=localStorage.getItem("attendance_welcome_v1")}catch(e){}

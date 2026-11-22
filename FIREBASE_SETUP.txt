@@ -73,6 +73,7 @@ WHERE TO LOOK
     mark              (kind = P attended, A bunked, C cancelled, U undone)
     subjects_added    (count)
     login             (signed in with Google)
+    share             (method = native / copy / whatsapp / telegram, from the footer share button)
 - Firebase console > Authentication > Users lists everyone who signed in with Google.
 
 PRIVACY
