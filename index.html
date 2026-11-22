@@ -459,20 +459,19 @@ function setMark(d,id,v,k=0){
  putArr(d,id,arr);save();renderMost();faceReact(kind,id);track("mark",{kind})}
 /* ===== Share Bunkit (footer button) ===== */
 const appUrl=()=>{try{return new URL("./",location.href).href}catch(e){return location.origin+location.pathname}};
-const shareMsg=(u,withLink=true)=>["Hey everyone! 👋","",
- "*Bunkit* is a free tool to track your lecture attendance and see exactly how many lectures you can safely bunk 🤫","",
+const shareMsg=(u,withLink=true)=>["Hey! 👋","",
+ "Found this free app called *Bunkit*. It tracks your lecture attendance and tells you exactly how many lectures you can bunk without dropping below the required % 🤫 Thought you'd find it useful.","",
  ...(withLink?["Open it here: "+u,""]:[]),
- "*Add it to your home screen so it works like a real app:*",
+ "To put it on your home screen so it opens like a real app:",
  "• *iPhone:* open the link in *Safari* → tap Share → *Add to Home Screen*",
  "• *Android:* open the link in *Chrome* → tap ⋮ (three dots) → *Install app* / *Add to Home screen*","",
- "✨ Works offline, no sign-up needed, and your data stays on your phone unless you choose to sync.","",
- "Enjoy, and bunk wisely 😜"].join("\n");
+ "No sign-up needed, works offline, and your data stays on your phone 😎 Give it a try and bunk wisely 😜"].join("\n");
 async function copyText(x){
  try{await navigator.clipboard.writeText(x);return true}catch(e){
   try{const ta=document.createElement("textarea");ta.value=x;ta.setAttribute("readonly","");ta.style.cssText="position:fixed;top:0;left:0;opacity:0";document.body.appendChild(ta);ta.select();const ok=document.execCommand("copy");ta.remove();return ok}catch(_){return false}}}
 function openShare(u,text){
  const o=$("#shr");o.classList.remove("out");o.hidden=false;
- $("#shbody").innerHTML=`<h2 id="sht">Share Bunkit</h2><p>Send this to your friends. It includes the link and how to install the app.</p>
+ $("#shbody").innerHTML=`<h2 id="sht">Share Bunkit</h2><p>Send this to a friend. It includes the link and how to install the app.</p>
  <div class="shbox" id="shtxt" tabindex="0">${esc(text)}</div>
  <div class="shbtns"><button class="btn pri" id="shcopy">Copy message</button>
  <a class="btn" id="shwa" href="https://wa.me/?text=${encodeURIComponent(text)}" target="_blank" rel="noopener noreferrer">Share on WhatsApp</a>
